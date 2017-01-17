@@ -1,0 +1,4 @@
+# Ignore test and composer tools
+/bin/
+/vendor/
+composer.lock
