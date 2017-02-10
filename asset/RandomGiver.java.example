@@ -2,7 +2,7 @@
 * Auxiliary program for random input problem
 *
 * @author Yu Tzu Wu
-* @param number of random cases plus 1
+* @param number of random cases
 */
 import java.lang.Math;
 
