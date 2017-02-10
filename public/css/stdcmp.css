@@ -1,0 +1,47 @@
+.RES_DIV {
+	width: 80vw;
+	height: 60vh;
+	background-color: #FFF6E5;
+	position: relative;
+}
+
+.SOL_DIV {
+	height: 60vh;
+	width: 80vw;
+	color: red;
+	font-size: 5vh;
+	background-color: transparent;
+	overflow: scroll;
+	display: none;
+	white-space: pre;
+}
+
+.STU_DIV {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 80vw;
+	height: 60vh;
+	font-size: 5vh;
+	background-color: transparent;
+	overflow: scroll;
+	white-space: pre;
+}
+
+.WHOSE_DIV {
+	width: 83vw;
+	background-color: #3196C4;
+}
+
+.UP_DOWN_IMG {
+	margin: 3px;
+	background-color: #FFF6E5;
+	height: 2vw;
+	width: 2vw;
+	float: right;
+}
+
+.UP_DOWN_IMG:hover {
+	background-color: #D8D8D8;
+
+}

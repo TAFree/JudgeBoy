@@ -35,6 +35,7 @@ class Proto {
 	private $stu_account;
 	private $item;
 	private $subitem;
+	private $id;
 	private $main;
 	private $dir_name;
 	private $status;
@@ -52,6 +53,7 @@ class Proto {
 		$this->stu_account = $_SERVER['argv'][1];
 		$this->item = $_SERVER['argv'][2];
 		$this->subitem = $_SERVER['argv'][3];
+		$this->id = $_SERVER['argv'][4];
 
 		try {
 			// Connect to MySQL database TAFreeDB
@@ -87,7 +89,7 @@ class Proto {
 	
 
 	public function createDir () {
-		$this->dir_name = '../process/' . uniqid(time(), true);
+		$this->dir_name = '../process';
 		mkdir($this->dir_name);
 		mkdir($this->dir_name . '/student');
 		mkdir($this->dir_name . '/solution');
@@ -118,11 +120,12 @@ class Proto {
 
 		}
 	}
+
 	public function fetchTestdata () {
-		$testdata = glob('../problem/testdata/' . $this->item . '/' . $this->subitem . '/*');
-		foreach($testdata as $key => $value) {
-			$content = file_get_contents($value);
-			array_push($this->testdata, $content);
+		$stmt = $this->hookup->prepare('SELECT content FROM ' . $this->item . '_' . $this->subitem . '_testdata');
+		$stmt->execute();
+		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			array_push($this->testdata, $row['content']);
 		}
 	}
 
@@ -298,10 +301,10 @@ class Proto {
 		fclose($pipes[0]);
 		
 		// Wait seconds
-		usleep(1000000);
+		//usleep(1000000);
 		
 		// Kill execution process
-		posix_kill($pid, SIGTERM);
+		//posix_kill($pid, SIGTERM);
 		
 		// Get output of STDOUT or STDERR pipe
 		$output = stream_get_contents($pipes[$pipe_id]);
@@ -333,6 +336,7 @@ class Proto {
 			if ($this->status === 'NA') {
 				$result = 'Not Accept';
 			}
+			
 			$this->view .= '<h1>' . $result . '</h1>';
 
 			for ($i = 0; $i < count($this->testdata); $i += 1) {
@@ -347,8 +351,13 @@ class Proto {
 </div>
 <br>
 EOF;
+
 			}
 
+			$this->view .=<<<EOF
+<link type='text/css' rel='stylesheet' href='http://45.32.107.147:83/css/stdcmp.css'>
+<script src='http://45.32.107.147:83/js/stdcmp.js'></script>
+EOF;
 		}
 		return;
 	}
