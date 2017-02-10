@@ -1,0 +1,15 @@
+/**
+* Auxiliary program for random input problem
+*
+* @author Yu Tzu Wu
+*/
+import java.lang.Math;
+
+public class RandomGiver {
+	public static void main (String[] args) {
+		int a = Integer.parseInt(args[0]);
+		String[] s = {"Apple", "Banana", "Orange", "Watermelon"};
+		int r = (int)(Math.random() * a);
+		System.out.print(s[r]);
+	}
+}

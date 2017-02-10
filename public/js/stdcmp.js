@@ -8,11 +8,11 @@ buts[i].addEventListener('click', function(e) {
 	stu = ele.parentNode.children[1].children[1];
 	sol = ele.parentNode.children[1].children[0];
 	if (ele.src.includes('attention')) {
-		ele.src = '../svg/undo.svg';
+		ele.src = 'http://45.32.107.147:83/svg/undo.svg';
 		sol.style.display = 'block';
 	}
 	else{
-		ele.src = '../svg/attention.svg';
+		ele.src = 'http://45.32.107.147:83/svg/attention.svg';
 		sol.style.display = 'none';
 
 	}

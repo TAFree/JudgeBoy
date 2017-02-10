@@ -343,7 +343,7 @@ class Proto {
 				$this->view .=<<<EOF
 <h2>Input: {$this->testdata[$i]}</h2>
 <div class='WHOSE_DIV'>
-<img class='UP_DOWN_IMG' src='../public/tafree-svg/attention.svg'>
+<img class='UP_DOWN_IMG' src='http://45.32.107.147:83/svg/attention.svg'>
 <div class='RES_DIV'>
 <div class='SOL_DIV'>{$this->solution_output[$i]}</div>
 <div class='STU_DIV'>{$this->student_output[$i]}</div>
