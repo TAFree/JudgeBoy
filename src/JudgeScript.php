@@ -8,16 +8,6 @@
 ini_set('display_errors', '1');
 ERROR_REPORTING(E_ALL);
 
-interface ICustomInfo {
-
-	const TESTDATA = 1; // 1) Static testdata 2) Random testdata 3) No testdata
-	const OUTPUT = 1; // 1) Full 2) Approximate approach
-	const TIME_RUN = 1; // Greater than 1 when testing random output
-	const FIND = null; // Null / output pattern with non-zero probability 
-
-	public static function proc_output(); // Callback function for processing output
-}
-
 interface IConnectInfo {
 
 	const HOST = 'localhost';
@@ -28,101 +18,189 @@ interface IConnectInfo {
 	public static function doConnect();
 }
 
-interface IResourceInfo {
-
-	const HOST = '45.32.107.147:83';
-
-	public static function loadResource();
+interface ICustomInfo {
+	const TESTDATA = 2; // 1) No testdata 2) Static testdata 
 }
 
-class UniversalResource implements IResourceInfo {
+class Custom {
+
+	private $stu_account = Must::stu_account;
+	private $item = Must::item;
+	private $subitem = Must::subitem;
+	private $id = Must::id;
+	private $main = Must::main;
+	private $dir_name = Must::dir_name;
+    private $testdata = Must::getTestdata();
+	private static $solution_output = array();
+	private static $student_output = array();
+
+	public function __construct () {
+		
+		// Solution and student directory whose source is in
+		$solution_dir = $this->dir_name . '/solution';
+		$student_dir = $this->dir_name . '/student';
+		
+		// Execute source code from student	
+		foreach ($this->testdata as $key => $value) {
+			$student_RE = $this->execute($student_dir, 2, $value);
+			if (!empty($student_RE)) {
+
+				// Configure result that will response to client side
+				$error_msg = '<h1>Your source code has runtime error</h1>' . '<pre><code>' . $student_RE . '</code></pre>';
+				Must::view = Viewer::config($error_msg);
 	
-	private static $servername = IResourceInfo::HOST;
-	private static $resource;
+				// Runtime error
+				Must::status = 'RE';
+				
+				return;
+		
+			}
+		}
+		
+		// Compare output from both solution and student
+		$result = array();
+		foreach ($this->testdata as $key => $value) {
+			$solution_output = $this->execute($solution_dir, 1, $value);
+			$student_output = $this->execute($student_dir, 1, $value);
+			
+			$retval = strcmp($solution_output, $student_output);
+			
+			array_push($result, $retval);
+			array_push(self::$solution_output, $solution_output);
+			array_push(self::$student_output, $student_output);
+		}
 
-	public static function loadResource() {
-		$ip = self::$servername;
-		self::$resource .=<<<EOF
-<link type='text/css' rel='stylesheet' href='http://$ip/css/stdcmp.css'>
-<script src='http://$ip/js/namespace/judgeboy.js'></script>
-<script src='http://$ip/js/web/config.js'></script>
-<script src='http://$ip/js/basic/stdcmp.js'></script>
-<script>
-JudgeBoy.web.Config.ip("$ip");
-JudgeBoy.view.Basic.stdcmp();
-</script>
-EOF;
-		return self::$resource;
+		if (in_array(0, $result)) {	
+			if (array_count_values($result)['0'] === count($result)) {
+				// Accept
+				Must::status = 'AC';
+			}else{
+				// Not Accept
+				Must::status = 'NA';
+			}
+		}
+		else {
+			// Wrong Answer
+			Must::status = 'WA';
+		}
+
+		// Configure result that will response to client side
+		$error_msg = null;
+		Must::view = Viewer::config($error_msg);
+		
+		return;
+		
 	}
-
-}
-
-class UniversalConnect implements IConnectInfo {
 	
-	private static $servername = IConnectInfo::HOST;
-	private static $dbname = IConnectInfo::DBNAME;
-	private static $username = IConnectInfo::UNAME;
-	private static $password = IConnectInfo::PW;
-	private static $conn;
-
-	public static function doConnect() {
-		self::$conn = new \PDO('mysql::host=' . self::$servername . ';dbname=' . self::$dbname, self::$username, self::$password);
-		self::$conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		return self::$conn;	
+	public static function getOutput($who) {
+        switch($who) {
+            case 'student': 
+                return self::$student_output;
+            case 'solution':
+                return self::$solution_output;
+        }
 	}
+	
+	public function getStatus($who) {
+        return $this->status;
+	}
+	
+	private function execute ($dir, $pipe_id, $testdata) {
+		// Configure descriptor array
+		$desc = array (
+				0 => array ('pipe', 'r'), // STDIN for process
+				1 => array ('pipe', 'w'), // STDOUT for process
+				2 => array ('pipe', 'w') // STDERR for process
+		);
 
+		// Configure execution command
+		$cmd = 'exec java -classpath ' . $dir . ' ';
+	        $last_pos = strrpos($this->main, '.java');
+	        $classname = substr($this->main, 0, $last_pos);
+	        $cmd .= $classname;
+		
+		// Create execution process
+		$process = proc_open($cmd, $desc, $pipes);
+		
+		// Get pid of execution process
+		$process_status = proc_get_status($process);
+		$pid = $process_status['pid'];	
+
+		// Send input to command 
+        fwrite($pipes[0], $testdata);
+		// Close STDIN pipe
+		fclose($pipes[0]);
+		
+		// Wait seconds
+		//usleep(1000000);
+		
+		// Kill execution process
+		//posix_kill($pid, SIGTERM);
+		
+		// Get output of STDOUT or STDERR pipe
+		$output = stream_get_contents($pipes[$pipe_id]);
+	
+		// Close STDOUT and STDERR pipe
+		fclose($pipes[1]);
+		fclose($pipes[2]);
+	
+		return $output;
+	}
+	
 }
 
 class Must {
 
-	private $stu_account;
-	private $item;
-	private $subitem;
-	private $id;
-	private $testdata = array();
-	private $status;
-	private $main;
-	private $status;
-	private $dir_name = './process';
-	private $view;
+	private static $stu_account;
+	private static $item;
+	private static $subitem;
+	private static $id;
+	private static $testdata = array();
+	private static $main;
+	private static $status;
+	private static $dir_name = './process';
+	private static $view;
 
-	private $hookup;
+	private static $hookup;
 
-	public function __construct () {
+	public static function run () {
 		
 		// Arguments: student account, item, subitem, id
-		$this->stu_account = $_SERVER['argv'][1];
-		$this->item = $_SERVER['argv'][2];
-		$this->subitem = $_SERVER['argv'][3];
-		$this->id = $_SERVER['argv'][4];
+		self::$stu_account = $_SERVER['argv'][1];
+		self::$item = $_SERVER['argv'][2];
+		self::$subitem = $_SERVER['argv'][3];
+		self::$id = $_SERVER['argv'][4];
 
 		try {
 	
 			// Connect to MySQL database TAFreeDB
-			$this->hookup = UniversalConnect::doConnect();						
+			self::$hookup = UniversalConnect::doConnect();						
 
 			// Create directory to put source codes temporarily
-			$this->createDir();
+			self::$createDir();
 			
 			// Fetch student and solution source from table [item]_[subitem]
-			$this->fetchSource();
+			self::$fetchSource();
 			
 			// Fetch testdata
-			$this->fetchTestdata(ICustomInfo::TESTDATA);
+			self::$fetchTestdata(ICustomInfo::TESTDATA);
 				
-			// Compile both student and standard sources
-			if ($this->areBothCompile()) {
-				// Start judge 
-				//$this->startJudge();
+			// Run and compare if both student and standard sources are compilable
+			if (self::$areBothCompile()) {
+				$runner = new Custom();
+				self::$status = $runner->getStatus(); 
 			}
 			
+            // Sava view
+			self::$saveView();
+			
 			// Update judge status
-			$this->updateStatus();
+			self::$updateStatus();
 
 			// Remove directory
-			$this->removeDir();
+			self::$removeDir();
 
-			$this->hookup = null;
+			self::$hookup = null;
 			
 			exit();
 		}
@@ -131,97 +209,107 @@ class Must {
 		}
 
 	}
-
-	private function createDir () {
-		mkdir($this->dir_name);
-		mkdir($this->dir_name . '/student');
-		mkdir($this->dir_name . '/solution');
+	
+    public static function saveView () {
+		$stmt = self::$hookup->prepare('UPDATE process SET view=:view WHERE id=\'' . self::$id . '\'');
+		$stmt->bindParam(':view', self::$view);
+		$stmt->execute();
+	}
+	
+	public static function getTestdata () {
+		return self::$testdata;
 	}
 
-	private function removeDir () {
-		system('rm -rf ' . $this->dir_name, $retval);
+	private static function createDir () {
+		mkdir(self::$dir_name);
+		mkdir(self::$dir_name . '/student');
+		mkdir(self::$dir_name . '/solution');
+	}
+
+	private static function removeDir () {
+		system('rm -rf ' . self::$dir_name, $retval);
 		if ($retval !== 0 ) {
 			echo 'Directory can not be removed...';
 			exit();
 		}
 	}
 	
-	private function fetchSource () {
-		$stmt = $this->hookup->prepare('SELECT main, classname, original_source, ' . $this->stu_account . ' FROM ' . $this->item . '_' . $this->subitem);
+	private static function fetchSource () {
+		$stmt = self::$hookup->prepare('SELECT main, classname, original_source, ' . self::$stu_account . ' FROM ' . self::$item . '_' . self::$subitem);
 		$stmt->execute();
 		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 			if ($row['main'] === 'V') {
-			    $this->main = $row['classname'];
+			    self::$main = $row['classname'];
 			}
-			$student = fopen($this->dir_name . '/student/' . $row['classname'], 'w');
-			fwrite($student, $row[$this->stu_account]);
+			$student = fopen(self::$dir_name . '/student/' . $row['classname'], 'w');
+			fwrite($student, $row[self::$stu_account]);
 			fclose($student);
 			
-			$solution = fopen($this->dir_name . '/solution/' . $row['classname'], 'w');
+			$solution = fopen(self::$dir_name . '/solution/' . $row['classname'], 'w');
 			fwrite($solution, $row['original_source']);
 			fclose($solution);
 
 		}
 	}
 	
-	private function updateStatus () {
-		$stmt = $this->hookup->prepare('UPDATE ' . $this->item . ' SET ' . $this->stu_account . '=\'' . $this->status . '\' WHERE subitem=\'' . $this->subitem . '\'');
+	private static function updateStatus () {
+		$stmt = self::$hookup->prepare('UPDATE ' . self::$item . ' SET ' . self::$stu_account . '=\'' . self::$status . '\' WHERE subitem=\'' . self::$subitem . '\'');
 		$stmt->execute();
 	}
 
-	private function fetchTestdata ($case) {
-		if ($case < 3) {
-			$stmt = $this->hookup->prepare('SELECT content FROM ' . $this->item . '_' . $this->subitem . '_testdata');
-			$stmt->execute();
-			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-				array_push($this->testdata, $row['content']);
-			}
-		}
-		else {
-			return;
-		}
+	private static function fetchTestdata ($case) {
+			switch ($case) {
+                case 1: // No testdata
+                    self::$testdata = array('');
+                    return;
+                case 2:
+                    $stmt = self::$hookup->prepare('SELECT content FROM ' . self::$item . '_' . self::$subitem . '_testdata');
+                    $stmt->execute();
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        array_push(self::$testdata, $row['content']);
+                    }
+                    return;
+                default:
+                    return;
+            }
 	}
 
-	private function areBothCompilable () {
+	private static function areBothCompilable () {
 		// Solution and student directory whose source is in
-		$solution_dir = $this->dir_name . '/solution';
-		$student_dir = $this->dir_name . '/student';
+		$solution_dir = self::$>dir_name . '/solution';
+		$student_dir = self::$dir_name . '/student';
 
 		// Compile source code from both solution and student
-		$solution_CE = $this->compile($solution_dir);
+		$solution_CE = self::$compile($solution_dir);
 		if (!empty($solution_CE)) {
+			
+            // System error
+			self::$status = 'SE';
 			
 			// Configure result that will response to client side
 			$error_msg = '<h1>Solution has compiler error</h1>' . '<pre><code>' . $solution_CE . '</code></pre>';
-			$this->view = Viewer::config($error_msg);
-			
-			// Sava view
-			$this->saveView();
-		
-			// System error
-			$this->status = 'SE';
+			self::$view = Viewer::config($error_msg);
+
 			return false;
 	
 		}
-		$student_CE = $this->compile($student_dir);
+		$student_CE = self::$compile($student_dir);
 		if (!empty($student_CE)) {
+			
+            // Compiler error
+			self::$status = 'CE';
 			
 			// Configure result that will response to client side
 			$error_msg = '<h1>Your source code has compiler error</h1>' . '<pre><code>' . $student_CE . '</code></pre>';
-			$this->view = Viewer::config($error_msg);
-			
-			// Sava view
-			$this->saveView();
+			self::$view = Viewer::config($error_msg);
 		
-			// Compiler error
-			$this->status = 'CE';
 			return false;
 	
 		}
 		return true;
 	}
 
-	private function compile ($dir) {
+	private static function compile ($dir) {
 		// Configure descriptor array
 		$desc = array (
 				0 => array ('pipe', 'r'), // STDIN for process
@@ -254,209 +342,123 @@ class Must {
 		
 		return $error;
 	}
-	
-	public function saveView () {
-		$stmt = $this->hookup->prepare('UPDATE process SET view=:view WHERE id=\'' . $this->id . '\'');
-		$stmt->bindParam(':view', $this->view);
-		$stmt->execute();
 
-	}
-	
-	public function getTestdata () {
-		return $this->testdata;
-	}
-
-}
-
-class Custom {
-
-	private $stu_account;
-	private $item;
-	private $subitem;
-	private $id;
-	private $main;
-	private $dir_name;
-	private $status;
-	private $solution_output = array();
-	private $student_output = array();
-	private $testdata = array();
-	private $result = array();
-
-	public function __construct () {
-		
-	}
-	
-
-	public function startJudge () {
-	
-		// Solution and student directory whose source is in
-		$solution_dir = $this->dir_name . '/solution';
-		$student_dir = $this->dir_name . '/student';
-		
-		// Execute source code from both solution and student	
-		foreach ($this->testdata as $key => $value) {
-			$solution_RE = $this->execute($solution_dir, 2, $value);
-			if (!empty($solution_RE)) {
-				
-				// Configure result that will response to client side
-				$error_msg = '<h1>Solution has runtime error</h1>' . '<pre><code>' . $solution_RE . '</code></pre>';
-				$this->configureView($error_msg);
-			
-				// Sava view
-				$this->saveView();
-			
-				// System error
-				$this->status = 'SE';
-				return;
-		
-			}
-			$student_RE = $this->execute($student_dir, 2, $value);
-			if (!empty($student_RE)) {
-
-				// Configure result that will response to client side
-				$error_msg = '<h1>Your source code has runtime error</h1>' . '<pre><code>' . $student_RE . '</code></pre>';
-				$this->configureView($error_msg);
-
-				// Sava view
-				$this->saveView();
-	
-				// Runtime error
-				$this->status = 'RE';
-				return;
-		
-			}
-		}
-		
-		// Compare output from both solution and student
-		foreach ($this->testdata as $key => $value) {
-			
-			$solution_output = $this->execute($solution_dir, 1, $value);
-			$student_output = $this->execute($student_dir, 1, $value);
-			
-			$retval = strcmp($solution_output, $student_output);
-			
-			array_push($this->result, $retval);
-			array_push($this->solution_output, $solution_output);
-			array_push($this->student_output, $student_output);
-		}
-
-		if (in_array(0, $this->result)) {	
-			if (array_count_values($this->result)['0'] === count($this->result)) {
-				// Accept
-				$this->status = 'AC';
-			}else{
-				// Not Accept
-				$this->status = 'NA';
-			}
-		}
-		else {
-			// Wrong Answer
-			$this->status = 'WA';
-		}
-
-		// Configure result that will response to client side
-		$error_msg = null;
-		$this->configureView($error_msg);
-		
-		// Sava view
-		$this->saveView();
-		
-		return;
-		
-	}
-	
-	public function execute ($dir, $pipe_id, $testdata) {
-		// Configure descriptor array
-		$desc = array (
-				0 => array ('pipe', 'r'), // STDIN for process
-				1 => array ('pipe', 'w'), // STDOUT for process
-				2 => array ('pipe', 'w') // STDERR for process
-		);
-
-		// Configure execution command
-		$cmd = 'exec java -classpath ' . $dir . ' ';
-	        $last_pos = strrpos($this->main, '.java');
-	        $classname = substr($this->main, 0, $last_pos);
-	        $cmd .= $classname;
-		
-		// Create execution process
-		$process = proc_open($cmd, $desc, $pipes);
-		
-		// Get pid of execution process
-		$process_status = proc_get_status($process);
-		$pid = $process_status['pid'];	
-
-		// Send input to command 
-		fwrite($pipes[0], $testdata);
-		// Close STDIN pipe
-		fclose($pipes[0]);
-		
-		// Wait seconds
-		//usleep(1000000);
-		
-		// Kill execution process
-		//posix_kill($pid, SIGTERM);
-		
-		// Get output of STDOUT or STDERR pipe
-		$output = stream_get_contents($pipes[$pipe_id]);
-	
-		// Close STDOUT and STDERR pipe
-		fclose($pipes[1]);
-		fclose($pipes[2]);
-	
-		return $output;
-	}
-	
-	
 }
 
 class Viewer {
-	private static $view;
-	private static $extres;
 
-	public static function config ($error_msg) {
-		// Load resource from external links
-		self::$extres = UniversalResource::loadResource();
-		
-		if (!is_null($error_msg)) {
-			 self::$view = $error_msg;
+	private $view;
+	private $result;
+	private $testdata;
+	private $solution_output;
+	private $student_output;
+
+	public function config ($error_msg) {
+
+		if (!is_null($error_msg)) { 
+            // Not compilable
+			 $this->view = $error_msg;
 		}
-		else {
-			$result = '';
-			if ($this->status === 'WA') {
-				$result = 'Wrong Answer';
-			}
-			if ($this->status === 'AC') {
-				$result = 'Accept';
-			}
-			if ($this->status === 'NA') {
-				$result = 'Not Accept';
-			}
-			
-			self::$view .= '<h1>' . $result . '</h1>';
+		else { 
+            
+            // Configure final result
+            switch (Must::$status) {
+                case 'WA':
+                    $this->result = 'Wrong Answer';
+                    break;
+                case 'AC':
+                    $this->result = 'Accept';
+                    break;
+                case 'NA':
+                    $this->result = 'Not Accept';
+                    break;
+                default:
+                    $this->result = 'System Error';
+            }
+			$this->view .= '<h1>' . $this->result . '</h1>';
+            
+            // Get solution & standard output
+            $this->solution_output = Custom::getOutput('solution');
+            $this->student_output = Custom::getOutput('student');
+            
+            // Configure each test result
+            $this->testdata = Must::getTestdata();
+            $this->view .= UniversalResource::BuildTag($this->student_output, $this->solution_output, $this->testdata);
+            
+            // Load resource from external links
+			$this->view .= UniversalResource::loadResource();
 
-			for ($i = 0; $i < count($this->testdata); $i += 1) {
-				self::$view .=<<<EOF
-<h2>Input: {$this->testdata[$i]}</h2>
+		}
+		
+		return $this->view;
+		
+	}
+	
+}
+
+interface IResourceInfo {
+
+	const HOST = '45.32.107.147:83';
+
+	public static function loadResource();
+}
+
+class UniversalResource implements IResourceInfo {
+	
+	private static $servername = IResourceInfo::HOST;
+	private static $resource;
+
+	public static function loadResource() {
+        $ip = self::$servername;
+		self::$resource .=<<<EOF
+<link type='text/css' rel='stylesheet' href='http://$ip/css/stdcmp.css'>
+<script src='http://$ip/js/namespace/judgeboy.js'></script>
+<script src='http://$ip/js/web/config.js'></script>
+<script src='http://$ip/js/basic/stdcmp.js'></script>
+<script>
+JudgeBoy.web.Config.ip("$ip");
+JudgeBoy.view.Basic.stdcmp();
+</script>
+EOF;
+		return self::$resource;
+	}
+	
+	public static function BuildTag($student_output, $solution_output, $testdata) {
+        $ip = self::$servername;
+        for ($i = 0; $i < count($testdata); $i += 1) {
+            $view =<<<EOF
+<h2>Input: {$testdata[$i]}</h2>
 <div class='WHOSE_DIV'>
-<img class='UP_DOWN_IMG' src='http://45.32.107.147:83/svg/attention.svg'>
+<img class='UP_DOWN_IMG' src='http://$ip/svg/attention.svg'>
 <div class='RES_DIV'>
-<div class='SOL_DIV'>{$this->solution_output[$i]}</div>
-<div class='STU_DIV'>{$this->student_output[$i]}</div>
+<div class='SOL_DIV'>{$solution_output[$i]}</div>
+<div class='STU_DIV'>{$student_output[$i]}</div>
 </div>
 </div>
 <br>
 EOF;
+        }
+        return $view;
+	} 
 
-			}
-
-			self::$view .= self::$extres;
-
-		}
-		return self::$view;
-	}
 }
 
-$judger = new Must();
+class UniversalConnect implements IConnectInfo {
+	
+	private static $servername = IConnectInfo::HOST;
+	private static $dbname = IConnectInfo::DBNAME;
+	private static $username = IConnectInfo::UNAME;
+	private static $password = IConnectInfo::PW;
+	private static $conn;
+
+	public static function doConnect() {
+		self::$conn = new \PDO('mysql::host=' . self::$servername . ';dbname=' . self::$dbname, self::$username, self::$password);
+		self::$conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		return self::$conn;	
+	}
+
+}
+
+$judger = Must::run();
 
 ?>
