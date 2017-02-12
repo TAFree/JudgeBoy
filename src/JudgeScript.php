@@ -19,93 +19,91 @@ interface IConnectInfo {
 }
 
 interface ICustomInfo {
-	const TESTDATA = 2; // 1) No testdata 2) Static testdata 
+	const TESTDATA = 1; // 1) No testdata 2) Static testdata 
 }
 
 class Custom {
 
-	private $stu_account = Must::stu_account;
-	private $item = Must::item;
-	private $subitem = Must::subitem;
-	private $id = Must::id;
-	private $main = Must::main;
-	private $dir_name = Must::dir_name;
-    private $testdata = Must::getTestdata();
+	private $stu_account;
+	private $item;
+	private $subitem;
+	private $id;
+	private $main;
+	private $dir_name;
+        private $testdata;
 	private static $solution_output = array();
 	private static $student_output = array();
 
 	public function __construct () {
+
+		// Get basic parameters
+		$this->stu_account = Must::$stu_account;
+		$this->item = Must::$item;
+		$this->subitem = Must::$subitem;
+		$this->id = Must::$id;
+		$this->main = Must::$main;
+	 	$this->dir_name = Must::$dir_name;
+	        $this->testdata = Must::$testdata;
 		
-		// Solution and student directory whose source is in
+		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
 		$student_dir = $this->dir_name . '/student';
 		
-		// Execute source code from student	
-		foreach ($this->testdata as $key => $value) {
-			$student_RE = $this->execute($student_dir, 2, $value);
-			if (!empty($student_RE)) {
-
-				// Configure result that will response to client side
-				$error_msg = '<h1>Your source code has runtime error</h1>' . '<pre><code>' . $student_RE . '</code></pre>';
-				Must::view = Viewer::config($error_msg);
-	
-				// Runtime error
-				Must::status = 'RE';
-				
-				return;
-		
-			}
-		}
-		
-		// Compare output from both solution and student
+		// Execute and compare output from both solution and student
 		$result = array();
 		foreach ($this->testdata as $key => $value) {
-			$solution_output = $this->execute($solution_dir, 1, $value);
-			$student_output = $this->execute($student_dir, 1, $value);
 			
-			$retval = strcmp($solution_output, $student_output);
+			$solution_output = $this->execute($solution_dir, $value);
+			$student_output = $this->execute($student_dir, $value);
 			
+			// Check runtime error from student's source code
+			if (!empty($student_output[2])) { 
+				// Configure result that will response to client side
+				$error_msg = '<h1>Your source code has runtime error</h1>' . '<pre><code>' . $student_output[2] . '</code></pre>';
+				Must::$view = Viewer::config($error_msg);
+				// Runtime error
+				Must::$status = 'RE';
+				return;
+			}
+			
+			$retval = strcmp($solution_output[1], $student_output[1]);
 			array_push($result, $retval);
-			array_push(self::$solution_output, $solution_output);
-			array_push(self::$student_output, $student_output);
+			array_push(self::$solution_output, $solution_output[1]);
+			array_push(self::$student_output, $student_output[1]);
 		}
 
 		if (in_array(0, $result)) {	
 			if (array_count_values($result)['0'] === count($result)) {
 				// Accept
-				Must::status = 'AC';
+				Must::$status = 'AC';
 			}else{
 				// Not Accept
-				Must::status = 'NA';
+				Must::$status = 'NA';
 			}
 		}
 		else {
 			// Wrong Answer
-			Must::status = 'WA';
+			Must::$status = 'WA';
 		}
 
 		// Configure result that will response to client side
 		$error_msg = null;
-		Must::view = Viewer::config($error_msg);
+		Must::$view = Viewer::config($error_msg);
 		
 		return;
 		
 	}
 	
 	public static function getOutput($who) {
-        switch($who) {
-            case 'student': 
-                return self::$student_output;
-            case 'solution':
-                return self::$solution_output;
-        }
+		switch($who) {
+		    case 'student': 
+			return self::$student_output;
+		    case 'solution':
+			return self::$solution_output;
+		}
 	}
 	
-	public function getStatus($who) {
-        return $this->status;
-	}
-	
-	private function execute ($dir, $pipe_id, $testdata) {
+	private function execute ($dir, $testdata) {
 		// Configure descriptor array
 		$desc = array (
 				0 => array ('pipe', 'r'), // STDIN for process
@@ -127,7 +125,7 @@ class Custom {
 		$pid = $process_status['pid'];	
 
 		// Send input to command 
-        fwrite($pipes[0], $testdata);
+	        fwrite($pipes[0], $testdata);
 		// Close STDIN pipe
 		fclose($pipes[0]);
 		
@@ -138,28 +136,31 @@ class Custom {
 		//posix_kill($pid, SIGTERM);
 		
 		// Get output of STDOUT or STDERR pipe
-		$output = stream_get_contents($pipes[$pipe_id]);
+		$out_err = array();
+		$out_err[0] = null;
+		$out_err[1] = stream_get_contents($pipes[1]);
+		$out_err[2] = stream_get_contents($pipes[2]);
 	
 		// Close STDOUT and STDERR pipe
 		fclose($pipes[1]);
 		fclose($pipes[2]);
 	
-		return $output;
+		return $out_err;
 	}
 	
 }
 
 class Must {
 
-	private static $stu_account;
-	private static $item;
-	private static $subitem;
-	private static $id;
-	private static $testdata = array();
-	private static $main;
-	private static $status;
-	private static $dir_name = './process';
-	private static $view;
+	public static $stu_account;
+	public static $item;
+	public static $subitem;
+	public static $id;
+	public static $testdata = array();
+	public static $main;
+	public static $status;
+	public static $dir_name = './process';
+	public static $view;
 
 	private static $hookup;
 
@@ -177,28 +178,27 @@ class Must {
 			self::$hookup = UniversalConnect::doConnect();						
 
 			// Create directory to put source codes temporarily
-			self::$createDir();
+			self::createDir();
 			
 			// Fetch student and solution source from table [item]_[subitem]
-			self::$fetchSource();
+			self::fetchSource();
 			
 			// Fetch testdata
-			self::$fetchTestdata(ICustomInfo::TESTDATA);
+			self::fetchTestdata(ICustomInfo::TESTDATA);
 				
 			// Run and compare if both student and standard sources are compilable
-			if (self::$areBothCompile()) {
+			if (self::isCompilable()) {
 				$runner = new Custom();
-				self::$status = $runner->getStatus(); 
 			}
 			
-            // Sava view
-			self::$saveView();
+           		 // Sava view
+			self::saveView();
 			
 			// Update judge status
-			self::$updateStatus();
+			self::updateStatus();
 
 			// Remove directory
-			self::$removeDir();
+			self::removeDir();
 
 			self::$hookup = null;
 			
@@ -210,16 +210,12 @@ class Must {
 
 	}
 	
-    public static function saveView () {
+	public static function saveView () {
 		$stmt = self::$hookup->prepare('UPDATE process SET view=:view WHERE id=\'' . self::$id . '\'');
 		$stmt->bindParam(':view', self::$view);
 		$stmt->execute();
 	}
 	
-	public static function getTestdata () {
-		return self::$testdata;
-	}
-
 	private static function createDir () {
 		mkdir(self::$dir_name);
 		mkdir(self::$dir_name . '/student');
@@ -258,45 +254,31 @@ class Must {
 	}
 
 	private static function fetchTestdata ($case) {
-			switch ($case) {
-                case 1: // No testdata
-                    self::$testdata = array('');
-                    return;
-                case 2:
-                    $stmt = self::$hookup->prepare('SELECT content FROM ' . self::$item . '_' . self::$subitem . '_testdata');
-                    $stmt->execute();
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        array_push(self::$testdata, $row['content']);
-                    }
-                    return;
-                default:
-                    return;
-            }
+		switch ($case) {
+			case 1: // No testdata
+			    self::$testdata = array('');
+			    return;
+			case 2:
+			    $stmt = self::$hookup->prepare('SELECT content FROM ' . self::$item . '_' . self::$subitem . '_testdata');
+			    $stmt->execute();
+			    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+				array_push(self::$testdata, $row['content']);
+			    }
+			    return;
+			default:
+			    return;
+            	}
 	}
 
-	private static function areBothCompilable () {
-		// Solution and student directory whose source is in
-		$solution_dir = self::$>dir_name . '/solution';
+	private static function isCompilable () {
+		// Student source directory
 		$student_dir = self::$dir_name . '/student';
 
-		// Compile source code from both solution and student
-		$solution_CE = self::$compile($solution_dir);
-		if (!empty($solution_CE)) {
-			
-            // System error
-			self::$status = 'SE';
-			
-			// Configure result that will response to client side
-			$error_msg = '<h1>Solution has compiler error</h1>' . '<pre><code>' . $solution_CE . '</code></pre>';
-			self::$view = Viewer::config($error_msg);
-
-			return false;
-	
-		}
-		$student_CE = self::$compile($student_dir);
+		// Compile source code from student
+		$student_CE = self::compile($student_dir);
 		if (!empty($student_CE)) {
 			
-            // Compiler error
+		        // Compiler error
 			self::$status = 'CE';
 			
 			// Configure result that will response to client side
@@ -347,50 +329,49 @@ class Must {
 
 class Viewer {
 
-	private $view;
-	private $result;
-	private $testdata;
-	private $solution_output;
-	private $student_output;
+	private static $view;
+	private static $result;
+	private static $testdata;
+	private static $solution_output;
+	private static $student_output;
 
-	public function config ($error_msg) {
+	public static function config ($error_msg) {
 
 		if (!is_null($error_msg)) { 
-            // Not compilable
-			 $this->view = $error_msg;
+                        // Not compilable
+			self::$view = $error_msg;
 		}
 		else { 
-            
-            // Configure final result
-            switch (Must::$status) {
-                case 'WA':
-                    $this->result = 'Wrong Answer';
-                    break;
-                case 'AC':
-                    $this->result = 'Accept';
-                    break;
-                case 'NA':
-                    $this->result = 'Not Accept';
-                    break;
-                default:
-                    $this->result = 'System Error';
-            }
-			$this->view .= '<h1>' . $this->result . '</h1>';
-            
-            // Get solution & standard output
-            $this->solution_output = Custom::getOutput('solution');
-            $this->student_output = Custom::getOutput('student');
-            
-            // Configure each test result
-            $this->testdata = Must::getTestdata();
-            $this->view .= UniversalResource::BuildTag($this->student_output, $this->solution_output, $this->testdata);
-            
-            // Load resource from external links
-			$this->view .= UniversalResource::loadResource();
+		        // Configure final result
+		        switch (Must::$status) {
+			    case 'WA':
+			        self::$result = 'Wrong Answer';
+			        break;
+  			    case 'AC':
+			        self::$result = 'Accept';
+			        break;
+			    case 'NA':
+			        self::$result = 'Not Accept';
+			        break;
+			    default:
+			        self::$result = 'System Error';
+			}
+			self::$view .= '<h1>' . self::$result . '</h1>';
+			    
+			// Get solution & standard output
+			self::$solution_output = Custom::getOutput('solution');
+			self::$student_output = Custom::getOutput('student');
+			    
+			// Configure each test result
+			self::$testdata = Must::$testdata;
+			self::$view .= UniversalResource::BuildTag(self::$student_output, self::$solution_output, self::$testdata);
+			    
+			// Load resource from external links
+			self::$view .= UniversalResource::loadResource();
 
 		}
 		
-		return $this->view;
+		return self::$view;
 		
 	}
 	
