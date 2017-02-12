@@ -70,6 +70,7 @@ class Custom {
 			array_push($result, $retval);
 			array_push(self::$solution_output, $solution_output[1]);
 			array_push(self::$student_output, $student_output[1]);
+		
 		}
 
 		if (in_array(0, $result)) {	
@@ -116,7 +117,7 @@ class Custom {
 	        $last_pos = strrpos($this->main, '.java');
 	        $classname = substr($this->main, 0, $last_pos);
 	        $cmd .= $classname;
-		
+	
 		// Create execution process
 		$process = proc_open($cmd, $desc, $pipes);
 		
@@ -144,7 +145,7 @@ class Custom {
 		// Close STDOUT and STDERR pipe
 		fclose($pipes[1]);
 		fclose($pipes[2]);
-	
+
 		return $out_err;
 	}
 	
@@ -271,10 +272,13 @@ class Must {
 	}
 
 	private static function isCompilable () {
-		// Student source directory
+
+		// Solution and student source directory
+		$solution_dir = self::$dir_name . '/solution';
 		$student_dir = self::$dir_name . '/student';
 
 		// Compile source code from student
+		$solution_CE = self::compile($solution_dir);
 		$student_CE = self::compile($student_dir);
 		if (!empty($student_CE)) {
 			
