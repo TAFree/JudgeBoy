@@ -1,9 +1,9 @@
 /**
-* Auxiliary program for random input problem
-*
-* @author Yu Tzu Wu
-* @param number of random cases
-*/
+ * Auxiliary program for random input problem
+ *
+ * @author Yu Tzu Wu <abby8050@gmail.com>
+ * @param number of random cases
+ */
 import java.lang.Math;
 
 public class RandomGiver {

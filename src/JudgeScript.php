@@ -1,7 +1,61 @@
 <?php
+/**
+ * A PHP customizing judge script example with / without testdata for TAFree
+ *
+ * @authur Yu Tzu Wu <abby8050@gmail.com>
+ */
 
 ini_set('display_errors', '1');
 ERROR_REPORTING(E_ALL);
+
+interface ICustomInfo {
+
+	const TESTDATA = 1; // 1) Static testdata 2) Random testdata 3) No testdata
+	const OUTPUT = 1; // 1) Full 2) Approximate approach
+	const TIME_RUN = 1; // Greater than 1 when testing random output
+	const FIND = null; // Null / output pattern with non-zero probability 
+
+	public static function proc_output(); // Callback function for processing output
+}
+
+interface IConnectInfo {
+
+	const HOST = 'localhost';
+	const UNAME = 'tafreedev';
+	const PW = 'ewre3571';
+	const DBNAME = 'TAFreeDev';
+
+	public static function doConnect();
+}
+
+interface IResourceInfo {
+
+	const HOST = '45.32.107.147:83';
+
+	public static function loadResource();
+}
+
+class UniversalResource implements IResourceInfo {
+	
+	private static $servername = IResourceInfo::HOST;
+	private static $resource;
+
+	public static function loadResource() {
+		$ip = self::$servername;
+		self::$resource .=<<<EOF
+<link type='text/css' rel='stylesheet' href='http://$ip/css/stdcmp.css'>
+<script src='http://$ip/js/namespace/judgeboy.js'></script>
+<script src='http://$ip/js/web/config.js'></script>
+<script src='http://$ip/js/basic/stdcmp.js'></script>
+<script>
+JudgeBoy.web.Config.ip("$ip");
+JudgeBoy.view.Basic.stdcmp();
+</script>
+EOF;
+		return self::$resource;
+	}
+
+}
 
 class UniversalConnect implements IConnectInfo {
 	
@@ -19,43 +73,31 @@ class UniversalConnect implements IConnectInfo {
 
 }
 
-interface IConnectInfo {
-
-	const HOST = 'localhost';
-	const UNAME = 'tafreedev';
-	const PW = 'ewre3571';
-	const DBNAME = 'TAFreeDev';
-
-	public static function doConnect();
-}
-
-
-class Proto {
+class Must {
 
 	private $stu_account;
 	private $item;
 	private $subitem;
 	private $id;
-	private $main;
-	private $dir_name;
-	private $status;
-	private $solution_output = array();
-	private $student_output = array();
 	private $testdata = array();
-	private $result = array();
+	private $status;
+	private $main;
+	private $status;
+	private $dir_name = './process';
 	private $view;
 
 	private $hookup;
 
 	public function __construct () {
 		
-		// Arguments: student account, item, subitem
+		// Arguments: student account, item, subitem, id
 		$this->stu_account = $_SERVER['argv'][1];
 		$this->item = $_SERVER['argv'][2];
 		$this->subitem = $_SERVER['argv'][3];
 		$this->id = $_SERVER['argv'][4];
 
 		try {
+	
 			// Connect to MySQL database TAFreeDB
 			$this->hookup = UniversalConnect::doConnect();						
 
@@ -66,10 +108,13 @@ class Proto {
 			$this->fetchSource();
 			
 			// Fetch testdata
-			$this->fetchTestdata();
-			
-			// Start judge 
-			$this->startJudge();
+			$this->fetchTestdata(ICustomInfo::TESTDATA);
+				
+			// Compile both student and standard sources
+			if ($this->areBothCompile()) {
+				// Start judge 
+				//$this->startJudge();
+			}
 			
 			// Update judge status
 			$this->updateStatus();
@@ -86,16 +131,14 @@ class Proto {
 		}
 
 	}
-	
 
-	public function createDir () {
-		$this->dir_name = '../process';
+	private function createDir () {
 		mkdir($this->dir_name);
 		mkdir($this->dir_name . '/student');
 		mkdir($this->dir_name . '/solution');
 	}
 
-	public function removeDir () {
+	private function removeDir () {
 		system('rm -rf ' . $this->dir_name, $retval);
 		if ($retval !== 0 ) {
 			echo 'Directory can not be removed...';
@@ -103,7 +146,7 @@ class Proto {
 		}
 	}
 	
-	public function fetchSource () {
+	private function fetchSource () {
 		$stmt = $this->hookup->prepare('SELECT main, classname, original_source, ' . $this->stu_account . ' FROM ' . $this->item . '_' . $this->subitem);
 		$stmt->execute();
 		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -120,17 +163,26 @@ class Proto {
 
 		}
 	}
-
-	public function fetchTestdata () {
-		$stmt = $this->hookup->prepare('SELECT content FROM ' . $this->item . '_' . $this->subitem . '_testdata');
+	
+	private function updateStatus () {
+		$stmt = $this->hookup->prepare('UPDATE ' . $this->item . ' SET ' . $this->stu_account . '=\'' . $this->status . '\' WHERE subitem=\'' . $this->subitem . '\'');
 		$stmt->execute();
-		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			array_push($this->testdata, $row['content']);
+	}
+
+	private function fetchTestdata ($case) {
+		if ($case < 3) {
+			$stmt = $this->hookup->prepare('SELECT content FROM ' . $this->item . '_' . $this->subitem . '_testdata');
+			$stmt->execute();
+			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+				array_push($this->testdata, $row['content']);
+			}
+		}
+		else {
+			return;
 		}
 	}
 
-	public function startJudge () {
-	
+	private function areBothCompilable () {
 		// Solution and student directory whose source is in
 		$solution_dir = $this->dir_name . '/solution';
 		$student_dir = $this->dir_name . '/student';
@@ -141,14 +193,14 @@ class Proto {
 			
 			// Configure result that will response to client side
 			$error_msg = '<h1>Solution has compiler error</h1>' . '<pre><code>' . $solution_CE . '</code></pre>';
-			$this->configureView($error_msg);
+			$this->view = Viewer::config($error_msg);
 			
 			// Sava view
 			$this->saveView();
 		
 			// System error
 			$this->status = 'SE';
-			return;
+			return false;
 	
 		}
 		$student_CE = $this->compile($student_dir);
@@ -156,17 +208,90 @@ class Proto {
 			
 			// Configure result that will response to client side
 			$error_msg = '<h1>Your source code has compiler error</h1>' . '<pre><code>' . $student_CE . '</code></pre>';
-			$this->configureView($error_msg);
+			$this->view = Viewer::config($error_msg);
 			
 			// Sava view
 			$this->saveView();
 		
 			// Compiler error
 			$this->status = 'CE';
-			return;
+			return false;
 	
 		}
+		return true;
+	}
+
+	private function compile ($dir) {
+		// Configure descriptor array
+		$desc = array (
+				0 => array ('pipe', 'r'), // STDIN for process
+				1 => array ('pipe', 'w'), // STDOUT for process
+				2 => array ('pipe', 'w') // STDERR for process
+		);
+
+		// Configure compilation command
+		$cmd = 'javac -d ' . $dir . ' ';
+		$source = glob($dir . '/*');
+		foreach ($source as $key => $value) {
+			$cmd .= $value . ' ';
+		}
+
+		// Create compilation process
+		$process = proc_open($cmd, $desc, $pipes);
+		
+		// Close STDIN pipe
+		fclose($pipes[0]);
+		
+		// Get output of STDERR pipe
+		$error = stream_get_contents($pipes[2]);
+		
+		// Close STDOUT and STDERR pipe
+		fclose($pipes[1]);
+		fclose($pipes[2]);
+		
+		// Close process
+		proc_close($process);
+		
+		return $error;
+	}
 	
+	public function saveView () {
+		$stmt = $this->hookup->prepare('UPDATE process SET view=:view WHERE id=\'' . $this->id . '\'');
+		$stmt->bindParam(':view', $this->view);
+		$stmt->execute();
+
+	}
+	
+	public function getTestdata () {
+		return $this->testdata;
+	}
+
+}
+
+class Custom {
+
+	private $stu_account;
+	private $item;
+	private $subitem;
+	private $id;
+	private $main;
+	private $dir_name;
+	private $status;
+	private $solution_output = array();
+	private $student_output = array();
+	private $testdata = array();
+	private $result = array();
+
+	public function __construct () {
+		
+	}
+	
+
+	public function startJudge () {
+	
+		// Solution and student directory whose source is in
+		$solution_dir = $this->dir_name . '/solution';
+		$student_dir = $this->dir_name . '/student';
 		
 		// Execute source code from both solution and student	
 		foreach ($this->testdata as $key => $value) {
@@ -239,40 +364,6 @@ class Proto {
 		return;
 		
 	}
-
-	public function compile ($dir) {
-		// Configure descriptor array
-		$desc = array (
-				0 => array ('pipe', 'r'), // STDIN for process
-				1 => array ('pipe', 'w'), // STDOUT for process
-				2 => array ('pipe', 'w') // STDERR for process
-		);
-
-		// Configure compilation command
-		$cmd = 'javac -d ' . $dir . ' ';
-		$source = glob($dir . '/*');
-		foreach ($source as $key => $value) {
-			$cmd .= $value . ' ';
-		}
-
-		// Create compilation process
-		$process = proc_open($cmd, $desc, $pipes);
-		
-		// Close STDIN pipe
-		fclose($pipes[0]);
-		
-		// Get output of STDERR pipe
-		$error = stream_get_contents($pipes[2]);
-		
-		// Close STDOUT and STDERR pipe
-		fclose($pipes[1]);
-		fclose($pipes[2]);
-		
-		// Close process
-		proc_close($process);
-		
-		return $error;
-	}
 	
 	public function execute ($dir, $pipe_id, $testdata) {
 		// Configure descriptor array
@@ -315,15 +406,20 @@ class Proto {
 	
 		return $output;
 	}
+	
+	
+}
 
-	public function updateStatus () {
-		$stmt = $this->hookup->prepare('UPDATE ' . $this->item . ' SET ' . $this->stu_account . '=\'' . $this->status . '\' WHERE subitem=\'' . $this->subitem . '\'');
-		$stmt->execute();
-	}
+class Viewer {
+	private static $view;
+	private static $extres;
 
-	public function configureView ($error_msg) {
+	public static function config ($error_msg) {
+		// Load resource from external links
+		self::$extres = UniversalResource::loadResource();
+		
 		if (!is_null($error_msg)) {
-			 $this->view = $error_msg;
+			 self::$view = $error_msg;
 		}
 		else {
 			$result = '';
@@ -337,10 +433,10 @@ class Proto {
 				$result = 'Not Accept';
 			}
 			
-			$this->view .= '<h1>' . $result . '</h1>';
+			self::$view .= '<h1>' . $result . '</h1>';
 
 			for ($i = 0; $i < count($this->testdata); $i += 1) {
-				$this->view .=<<<EOF
+				self::$view .=<<<EOF
 <h2>Input: {$this->testdata[$i]}</h2>
 <div class='WHOSE_DIV'>
 <img class='UP_DOWN_IMG' src='http://45.32.107.147:83/svg/attention.svg'>
@@ -354,23 +450,13 @@ EOF;
 
 			}
 
-			$this->view .=<<<EOF
-<link type='text/css' rel='stylesheet' href='http://45.32.107.147:83/css/stdcmp.css'>
-<script src='http://45.32.107.147:83/js/stdcmp.js'></script>
-EOF;
-		}
-		return;
-	}
-	
-	public function saveView () {
-		$stmt = $this->hookup->prepare('UPDATE process SET view=:view WHERE id=\'' . $this->id . '\'');
-		$stmt->bindParam(':view', $this->view);
-		$stmt->execute();
+			self::$view .= self::$extres;
 
+		}
+		return self::$view;
 	}
-	
 }
 
-$judger = new Proto();
+$judger = new Must();
 
 ?>
