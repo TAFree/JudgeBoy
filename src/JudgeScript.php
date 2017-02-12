@@ -160,7 +160,7 @@ class Must {
 	public static $testdata = array();
 	public static $main;
 	public static $status;
-	public static $dir_name = './process';
+	public static $dir_name;
 	public static $view;
 
 	private static $hookup;
@@ -218,6 +218,7 @@ class Must {
 	}
 	
 	private static function createDir () {
+		self::$dir_name = './process-' . uniqid(time(), true);
 		mkdir(self::$dir_name);
 		mkdir(self::$dir_name . '/student');
 		mkdir(self::$dir_name . '/solution');
