@@ -19,7 +19,7 @@ interface IConnectInfo {
 }
 
 interface ICustomInfo {
-	const TESTDATA = 1; // 1) No testdata 2) Static testdata 
+	const TESTDATA = 2; // 1) No testdata 2) Static testdata 
 }
 
 class Custom {
@@ -197,9 +197,9 @@ class Must {
 			
 			// Update judge status
 			self::updateStatus();
-
-			// Remove directory
-			self::removeDir();
+ 
+			// Do not remove directory for research
+			//self::removeDir();
 
 			self::$hookup = null;
 			
@@ -218,7 +218,7 @@ class Must {
 	}
 	
 	private static function createDir () {
-		self::$dir_name = './process-' . uniqid(time(), true);
+		self::$dir_name = './process-' . self::$id;
 		mkdir(self::$dir_name);
 		mkdir(self::$dir_name . '/student');
 		mkdir(self::$dir_name . '/solution');
@@ -251,8 +251,15 @@ class Must {
 	}
 	
 	private static function updateStatus () {
-		$stmt = self::$hookup->prepare('UPDATE ' . self::$item . ' SET ' . self::$stu_account . '=\'' . self::$status . '\' WHERE subitem=\'' . self::$subitem . '\'');
-		$stmt->execute();
+		
+		// Update [item] table
+		$stmt_item = self::$hookup->prepare('UPDATE ' . self::$item . ' SET ' . self::$stu_account . '=\'' . self::$status . '\' WHERE subitem=\'' . self::$subitem . '\'');
+		$stmt_item->execute();
+		
+		// Update process table
+		$stmt_process = self::$hookup->prepare('UPDATE process SET status=\'' . self::$status . '\' WHERE id=\'' . self::$id . '\'');
+		$stmt_process->execute();
+
 	}
 
 	private static function fetchTestdata ($case) {
@@ -410,9 +417,10 @@ EOF;
 	}
 	
 	public static function BuildTag($student_output, $solution_output, $testdata) {
-        $ip = self::$servername;
-        for ($i = 0; $i < count($testdata); $i += 1) {
-            $view =<<<EOF
+		$ip = self::$servername;
+		$view = '';
+		for ($i = 0; $i < count($testdata); $i += 1) {
+		    $view .=<<<EOF
 <h2>Input: {$testdata[$i]}</h2>
 <div class='WHOSE_DIV'>
 <img class='UP_DOWN_IMG' src='http://$ip/svg/attention.svg'>
@@ -423,8 +431,8 @@ EOF;
 </div>
 <br>
 EOF;
-        }
-        return $view;
+		}
+		return $view;
 	} 
 
 }

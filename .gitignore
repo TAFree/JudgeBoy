@@ -1,1 +1,5 @@
+# Ignore binary files
 *.class
+
+# Ignore temporary directory that store student and solution source code
+/process-*/
