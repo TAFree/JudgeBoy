@@ -3,11 +3,11 @@ A PHP library offering examples for customizing judge script.
   
 ## Usage
 **1. Resource Website**   
-JudgeBoy/public/ is root of 45.32.107.147:83 that is placed css, js, svg, and php files for configuring the response of each submission. 
-Its configuration file is JudgeBoy/config/000-judgeboy.conf.    
+_JudgeBoy/public/_ is root of 45.32.107.147:83 that is placed css, js, svg, and php files for configuring the response of each submission. 
+Its configuration file is _JudgeBoy/config/000-judgeboy.conf_.    
   
 **2. Judge Script Library**  
-JudgeBoy/src is placed judge scripts of lab assignments.  
+_JudgeBoy/src_ is placed judge scripts of lab assignments.  
 Please change database and custom information:
 ```
 interface IConnectInfo {
