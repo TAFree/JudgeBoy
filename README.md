@@ -22,5 +22,6 @@ interface ICustomInfo {
 	const TESTDATA = 1; // 1) No testdata 2) Static testdata 
 }
 ```
+  
 ## License
 JudgeBoy is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
