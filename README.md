@@ -3,7 +3,7 @@ A PHP library offering examples for customizing judge script.
   
 ## Usage
 **1. Resource Website**   
-JudgeBoy/public/ is root of 45.32.107.147:83 that is placed css, js, and svg files for configuring the response of each submission. 
+JudgeBoy/public/ is root of 45.32.107.147:83 that is placed css, js, svg, and php files for configuring the response of each submission. 
 Its configuration file is JudgeBoy/config/000-judgeboy.conf.    
   
 **2. Judge Script Library**  
