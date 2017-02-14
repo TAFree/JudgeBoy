@@ -8,7 +8,7 @@ Its configuration file is JudgeBoy/config/000-judgeboy.conf.
   
 **2. Judge Script Library**  
 JudgeBoy/src is placed judge scripts of lab assignments.  
-Please change database and custom information in src/JudgeScript.php.example:
+Please change database and custom information:
 ```
 interface IConnectInfo {
 	const HOST = '45.32.107.147';
