@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface IConnectInfo {
 
-	const HOST = 'localhost';
+	const HOST = '45.32.107.147';
 	const UNAME = 'tafreedev';
 	const PW = 'ewre3571';
 	const DBNAME = 'TAFreeDev';
@@ -218,7 +218,7 @@ class Must {
 	}
 	
 	private static function createDir () {
-		self::$dir_name = './process-' . self::$id;
+		self::$dir_name = './.process/process-' . self::$id;
 		mkdir(self::$dir_name);
 		mkdir(self::$dir_name . '/student');
 		mkdir(self::$dir_name . '/solution');
