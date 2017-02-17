@@ -23,5 +23,12 @@ interface ICustomInfo {
 }
 ```
   
+**3. Container Controller
+Run _JudgeBoy/service/Cleaner.php_ in the backend to restart stuck container (for example, an unstoppable code snippet inside student's submission) all the time.
+```
+sudo ./service/Cleaner.php
+  
+```
+  
 ## License
 JudgeBoy is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).

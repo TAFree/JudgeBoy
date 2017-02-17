@@ -21,23 +21,33 @@ interface IConnectInfo {
 class Cleaner {
 
 	private $hookup;
+	private $container_id;
+	private $unique_key;
 
 	public function __construct () {
 
 		try {
 	
 			// Connect to MySQL database TAFreeDB
-			#$this->hookup = UniversalConnect::doConnect();
+			$this->hookup = UniversalConnect::doConnect();
 			
+			// Sign up process table and get container ID when status is TLE
+			$this->unique_key = 'Free<br>(' . time() . ')';
+			$stmt_sign = $this->hookup->prepare('UPDATE process SET status=\'' . $this->unique_key . '\' WHERE status=\'TLE\''); 
+			$stmt_sign->execute();
+			$stmt_get = $this->hookup->prepare('SELECT judger FROM process WHERE status=\'' . $this->unique_key . '\''); 
+			$stmt_get->execute();
 			
-			while(true) {
-                exec('docker stop 2d1', $output);
-                print_r($output);
+			// Restart container
+			while ($row = $stmt_get->fetch(\PDO::FETCH_ASSOC)) {
+				$pre = strpos($row['judger'], '(') + 1;
+				$pos = strpos($row['judger'], ')') ;
+				$this->container_id = substr($row['judger'], $pre, $pos - $pre);
+				exec('docker stop ' . $this->container_id . ' && docker start ' . $this->container_id);
 			}
 
 			$this->hookup = null;
-			
-			exit();
+	
 		}
 		catch (\PDOException $e) {
 			echo 'Error: ' . $e->getMessage() . '<br>';
