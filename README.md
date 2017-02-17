@@ -23,7 +23,7 @@ interface ICustomInfo {
 }
 ```
   
-**3. Container Controller
+**3. Container Controller**
 Run _JudgeBoy/service/Cleaner.php_ in the backend to restart stuck container (for example, an unstoppable code snippet inside student's submission) all the time.
 ```
 sudo ./service/Cleaner.php
