@@ -1,6 +1,6 @@
 <?php
 /**
- * A container controller is triggered by cleaner daemon to restart judger.sh in the Docker containers when they are getting stuck.
+ * A container controller is triggered by cleaner daemon to restart judger.sh in the Docker container when one is getting stuck.
  *
  * @authur Yu Tzu Wu <abby8050@gmail.com>
  */
@@ -33,18 +33,17 @@ class ContainerController {
 			
 			// Sign up process table and get container ID when status is TLE
 			$this->unique_key = 'Free<br>(' . time() . ')';
-			$stmt_sign = $this->hookup->prepare('UPDATE process SET status=\'' . $this->unique_key . '\' WHERE status=\'TLE\''); 
+			$stmt_sign = $this->hookup->prepare('UPDATE process SET status=\'' . $this->unique_key . '\' WHERE status=\'TLE\' ORDER BY id LIMIT 1'); 
 			$stmt_sign->execute();
 			$stmt_get = $this->hookup->prepare('SELECT judger FROM process WHERE status=\'' . $this->unique_key . '\''); 
 			$stmt_get->execute();
 			
 			// Restart container
-			while ($row = $stmt_get->fetch(\PDO::FETCH_ASSOC)) {
-				$pre = strpos($row['judger'], '(') + 1;
-				$pos = strpos($row['judger'], ')') ;
-				$this->container_id = substr($row['judger'], $pre, $pos - $pre);
-				exec('docker stop ' . $this->container_id . ' && docker start ' . $this->container_id);
-			}
+			$row = $stmt_get->fetch(\PDO::FETCH_ASSOC);
+			$pre = strpos($row['judger'], '(') + 1;
+			$pos = strpos($row['judger'], ')') ;
+			$this->container_id = substr($row['judger'], $pre, $pos - $pre);
+			exec('docker stop ' . $this->container_id . ' && docker start ' . $this->container_id);
 
 			$this->hookup = null;
 	

@@ -24,11 +24,22 @@ interface ICustomInfo {
 ```
    
 **3. Container Controller**  
-Run _JudgeBoy/service/Cleaner.php_ in the backend to restart stuck container (for example, an unstoppable code snippet inside student's submission) all the time.
+Run _JudgeBoy/service/cleaner.sh_ in the backend to restart stuck containers (for example, an unstoppable code snippet inside student's submission) all the time.
 ```
 sudo git clone http://github.com/TAFree/JudgeBoy
-cd ./JudgeBoy
-sudo php service/Cleaner.php
+cd ./JudgeBoy/service
+sudo mv ContainerController.php.example ContainerController.php
+sudo vi ContainerController.php
+interface IConnectInfo {
+
+	const HOST = '45.32.107.147';
+	const UNAME = 'account';
+	const PW = 'password';
+	const DBNAME = 'TAFreeDB';
+
+	public static function doConnect();
+}
+sudo ./cleaner.sh start
 ```
   
 ## License

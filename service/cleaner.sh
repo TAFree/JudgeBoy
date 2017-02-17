@@ -18,7 +18,7 @@ LOG_MONITOR_FILE=monitor.log
 # Variable
 ACTION=$1
 PID_CLEANER=""
-INTERVAL=1S
+INTERVAL=1
 COMMAND="php ContainerController.php"
 
 
