@@ -22,14 +22,13 @@ interface ICustomInfo {
 	const TESTDATA = 1; // 1) No testdata 2) Static testdata 
 }
 ```
-  
+   
 **3. Container Controller**  
 Run _JudgeBoy/service/Cleaner.php_ in the backend to restart stuck container (for example, an unstoppable code snippet inside student's submission) all the time.
 ```
 sudo git clone http://github.com/TAFree/JudgeBoy
 cd ./JudgeBoy
 sudo php service/Cleaner.php
-  
 ```
   
 ## License
