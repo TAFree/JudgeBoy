@@ -39,7 +39,7 @@ interface IConnectInfo {
 
 	public static function doConnect();
 }
-sudo ./cleaner.sh start
+sudo /bin/bash cleaner.sh start
 ```
   
 ## License
