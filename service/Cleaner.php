@@ -1,6 +1,6 @@
 <?php
 /**
- * A cleaner to restart Docker container when one judge client is getting stuck.
+ * A container controller is triggered by cleaner daemon to restart judger.sh in the Docker containers when they are getting stuck.
  *
  * @authur Yu Tzu Wu <abby8050@gmail.com>
  */
@@ -18,7 +18,7 @@ interface IConnectInfo {
 	public static function doConnect();
 }
 
-class Cleaner {
+class ContainerController {
 
 	private $hookup;
 	private $container_id;
@@ -73,6 +73,6 @@ class UniversalConnect implements IConnectInfo {
 
 }
 
-$cleaner = new Cleaner();
+$controller = new ContainerController();
 
 ?>
