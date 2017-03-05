@@ -17,7 +17,6 @@ JudgeBoy.view.Basic = {
 				else{
 					ele.src = 'http://45.32.107.147:83/svg/attention.svg';
 					sol.style.display = 'none';
-
 				}
 			});
 		}
