@@ -16,6 +16,22 @@
 	white-space: pre;
 }
 
+.CANDI_DIV {
+	position: relative;
+	height: 20vh;
+	width: 80vw;
+	font-size: 5vh;
+	background-color: #90EE90;
+	white-space: pre;
+	overflow: scroll;
+}
+
+.CANDI_INPUT {
+	float: right;
+	height: 1.5vw;
+	width: 1.5vw;
+}
+
 .STU_DIV {
 	position: absolute;
 	top: 0;

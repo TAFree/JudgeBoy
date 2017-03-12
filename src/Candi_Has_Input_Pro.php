@@ -29,38 +29,38 @@ class Candi {
     public function matchOutput($testdata, $stu_output){
         switch($testdata) {
             case 0:
-                $this->output[0] = "The computer is scissor. You are scissor too. It is a draw!";
-                $this->output[1] = "The computer is rock. You are scissor. You lose!";
-                $this->output[2] = "The computer is paper. You are scissor. You won!";
+                $this->output[0] = "scissor (0), rock (1), paper (2): The computer is scissor. You are scissor too. It is a draw!";
+                $this->output[1] = "scissor (0), rock (1), paper (2): The computer is rock. You are scissor. You lose!";
+                $this->output[2] = "scissor (0), rock (1), paper (2): The computer is paper. You are scissor. You win!";
                 foreach($this->output as $key => $value) {
-                    if (strpos($stu_output, $value) != false) {
+                    if (strcmp($stu_output, $value) === 0) {
                         return $value;
                     }
-                    reutrn $this->output;
                 }
-                break;
+                return $this->output;
+		break;
             case 1:
-                $this->output[0] = "The computer is scissor. You are rock. You won!";
-                $this->output[1] = "The computer is rock. You are rock too. It is a draw!";
-                $this->output[2] = "The computer is paper. You are rock. You lose!";
+                $this->output[0] = "scissor (0), rock (1), paper (2): The computer is scissor. You are rock. You win!";
+                $this->output[1] = "scissor (0), rock (1), paper (2): The computer is rock. You are rock too. It is a draw!";
+                $this->output[2] = "scissor (0), rock (1), paper (2): The computer is paper. You are rock. You lose!";
                 foreach($this->output as $key => $value) {
-                    if (strpos($stu_output, $value) != false) {
+                    if (strcmp($stu_output, $value) === 0) {
                         return $value;
                     }
-                    reutrn $this->output;
                 }
+	 	return $this->output;	
                 break;
             case 2:
-                $this->output[0] = "The computer is scissor. You are paper. You lose!";
-                $this->output[1] = "The computer is rock. You are paper. You won!";
-                $this->output[2] = "The computer is paper. You are paper too. It is a draw!";
+                $this->output[0] = "scissor (0), rock (1), paper (2): The computer is scissor. You are paper. You lose!";
+                $this->output[1] = "scissor (0), rock (1), paper (2): The computer is rock. You are paper. You win!";
+                $this->output[2] = "scissor (0), rock (1), paper (2): The computer is paper. You are paper too. It is a draw!";
                 foreach($this->output as $key => $value) {
-                    if (strpos($stu_output, $value) != false) {
+                    if (strcmp($stu_output, $value) === 0) {
                         return $value;
                     }
-                    reutrn $this->output;
                 }
-                break;
+                return $this->output;
+		break;
         }
     }
 }
@@ -73,7 +73,7 @@ class Custom {
 	private $id;
 	private $main;
 	private $dir_name;
-    private $testdata;
+    	private $testdata;
 	private static $solution_output = array();
 	private static $student_output = array();
 
@@ -97,7 +97,9 @@ class Custom {
 		foreach ($this->testdata as $key => $value) {
 			
 			$student_output = $this->execute($student_dir, $value);
-			
+			$candi = new Candi();
+			$solution_output = $candi->matchOutput($value, $student_output[1]);
+
 			// Check time limit from student's source code
 			if ($student_output[0] === 'TLE') { 
 				// Configure result that will response to client side
@@ -118,11 +120,15 @@ class Custom {
 				return;
 			}
 			
-			$candi = new Candi();
-			$solution_output[1] = $candi->matchOutput($testdata, $student_output[1]);
-			$retval = !(is_array($solution_output[1]));
+			
+			if(is_array($solution_output)){
+				$retval = 1; // Not match candidate outputs
+			}
+			else {
+				$retval = 0; // Match candidate outputs
+			}
 			array_push($result, $retval);
-			array_push(self::$solution_output, $solution_output[1]);
+			array_push(self::$solution_output, $solution_output);
 			array_push(self::$student_output, $student_output[1]);
 		
 		}
@@ -479,6 +485,7 @@ class UniversalResource implements IResourceInfo {
 <script>
 JudgeBoy.web.Config.ip("$ip");
 JudgeBoy.view.Basic.stdcmp();
+JudgeBoy.view.Basic.candi_match();
 </script>
 EOF;
 		return self::$resource;
@@ -490,10 +497,38 @@ EOF;
 		for ($i = 0; $i < count($testdata); $i += 1) {
 		    $view .=<<<EOF
 <h2>Input: {$testdata[$i]}</h2>
+EOF;
+		    if (is_array($solution_output[$i])) {
+			$view .=<<<EOF
+<h2>Expect to match one of the following: </h2>
+EOF;
+			
+			foreach($solution_output[$i] as $key => $value) {
+				$view .=<<<EOF
 <div class='WHOSE_DIV'>
-<img class='UP_DOWN_IMG' src='http://$ip/svg/attention.svg'>
+<input id='$i' class='CANDI_INPUT' type='radio' name='candi' value='$value'>
+<div class='CANDI_DIV'><pre>$value</pre></div>
+</div>
+EOF;
+		    	}
+		    }
+		    else {
+			$view .=<<<EOF
+<h2>Match: </h2>
+<div class='WHOSE_DIV'>
+<input id='$i' class='CANDI_INPUT' type='checkbox' name='candi' value='{$solution_output[$i]}'>
+<div class='CANDI_DIV'><pre>{$solution_output[$i]}</pre></div>
+</div>
+EOF;
+		    }
+			$view .=<<<EOF
+<h2>Your output: </h2>
+EOF;
+
+		    $view .=<<<EOF
+<div class='WHOSE_DIV'>
 <div class='RES_DIV'>
-<div class='SOL_DIV'><pre>{$solution_output[$i]}</pre></div>
+<div id='$i' class='SOL_DIV'><pre></pre></div>
 <div class='STU_DIV'><pre>{$student_output[$i]}</pre></div>
 </div>
 </div>
