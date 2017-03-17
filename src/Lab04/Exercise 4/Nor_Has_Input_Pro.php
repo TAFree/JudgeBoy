@@ -24,7 +24,7 @@ class Custom {
 	private $id;
 	private $main;
 	private $dir_name;
-        private $testdata;
+    private $testdata;
 	private static $solution_output = array();
 	private static $student_output = array();
 	public function __construct () {
@@ -68,9 +68,12 @@ class Custom {
 				return;
 			}
 			
+			// Normalize outputs of solution source code and student source code
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
 			$solution_output[1] = $this->normalize($solution_output[1], ICustomInfo::NORMALIZE);
-			$retval = strcmp($student_output[1], $solution_output[1]);
+			
+			// Compare outputs of solution source code and student source code
+            $retval = strcmp($student_output[1], $solution_output[1]);
 			
 			array_push($result, $retval);
 			array_push(self::$solution_output, $solution_output[1]);
@@ -161,7 +164,8 @@ class Custom {
 		fclose($pipes[2]);
 		return $out_err;
 	}
-	function normalize ($input, $mode) {
+	
+	private function normalize ($input, $mode) {
 		$output = $input;
 		if ($mode === 1) {
 			// Raw output
@@ -181,7 +185,7 @@ class Custom {
 			$whitespace = '/[ \t]+([^\n])/';	
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
-			$output = preg_replace($linebreak, '\n', $output);
+			$output = preg_replace($linebreak, '<br>', $output);
 			$output = preg_replace($whitespace, ' $1', $output);
 		}
 		return $output;

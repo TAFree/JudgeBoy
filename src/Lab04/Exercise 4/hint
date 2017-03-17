@@ -1,0 +1,12 @@
+<pre>
+Enter an integer, or quit with Q or q: 3
+Enter an integer, or quit with Q or q: 5
+Enter an integer, or quit with Q or q: 2
+Enter an integer, or quit with Q or q: 5
+Enter an integer, or quit with Q or q: 5
+Enter an integer, or quit with Q or q: 5
+Enter an integer, or quit with Q or q: Q
+The largest number is 5
+The count for the largest number is 4
+The average is 4.17
+</pre>
