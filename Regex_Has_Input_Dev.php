@@ -20,21 +20,27 @@ interface IConnectInfo {
 
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
-    const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
+	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
 }
 
 class Matcher {
+
     private $pattern;
+    private $retval;
+
     public function __construct(String $pattern, String $student_output, Logic $logic){
         $this->setPattern($pattern);
-        return $this->verify($student_output, $logic)
+        $this->retval = $this->verify($student_output, $logic);
     }
-    public function setPattern(String $pattern){
+    private function setPattern(String $pattern){
         $this->pattern = $pattern;
     }
-    public function verify($student_output, $logic){
+    private function verify($student_output, $logic){
         $found = preg_match($this->pattern, $student_output, $matches);
         return $logic->parseMatches($matches, $found);
+    }
+    public function returnVal(){
+	return $this->retval;
     }
 }
 
@@ -50,7 +56,7 @@ class StdCmp implements Logic {
 }
 
 interface Logic {
-    public function parseMatches($matches); 
+    public function parseMatches($matches, $found); 
 }
 
 class Custom {
@@ -61,7 +67,7 @@ class Custom {
 	private $id;
 	private $main;
 	private $dir_name;
-    private $testdata;
+	private $testdata;
 	private static $solution_output = array();
 	private static $student_output = array();
 
@@ -74,7 +80,7 @@ class Custom {
 		$this->id = Must::$id;
 		$this->main = Must::$main;
 	 	$this->dir_name = Must::$dir_name;
-        $this->testdata = Must::$testdata;
+	        $this->testdata = Must::$testdata;
 		
 		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
@@ -111,10 +117,13 @@ class Custom {
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
 			
 			// Verify output of student source code
-			$retval = new Matcher($solution_output[1], $student_output[1], new StdCmp());
-			
+			$pattern = '/' . $student_output[1] . '/';
+			$matcher = new Matcher($pattern, $student_output[1], new StdCmp());
+			$retval = $matcher->returnVal();
+
 			array_push($result, $retval);
 			array_push(self::$student_output, $student_output[1]);
+			array_push(self::$solution_output, $solution_output[1]);
 		
 		}
 
