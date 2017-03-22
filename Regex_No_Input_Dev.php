@@ -24,15 +24,51 @@ interface ICustomInfo {
 }
 
 class MinRowSum implements Logic {
+    
+    private $min_sum;
+    private $min_row;
     public function parseMatches($matches, $found){
-        if ($found === 1) {
-            var_dump($matches);
-            return 0;
+        if ($found > 0) {
+            $this->convertType($matches[1], 'int');
+            $this->convertType($matches[2], 'double');
+	    $this->min_row = $matches[1][9];
+	    $this->min_sum = $matches[2][9];
+	    $min = 3.0;
+	    $row = 0;
+	    for($i = 0; $i < count($matches[2]) - 1; $i += 3){
+		$cur = $matches[2][$i] + $matches[2][$i + 1] + $matches[2][$i + 2];
+		if ($min > $cur) {
+			$min = $cur;
+			$row = $i / 3;
+		}
+	    }
+	    if ($this->min_sum === $min && $this->min_row === $row){	
+	        return 0;    
+	    }
+	    else {
+		return 1;
+	    }
         }
         else {
-            return 1;
+            return 2;
         }
     }
+
+    private function convertType(&$arr, $type) {
+	switch($type) {
+		case 'int':
+			for($i = 0; $i < count($arr); $i += 1) {
+				$arr[$i] = intval($arr[$i]);
+			}
+		break;
+		case 'double':
+			for($i = 0; $i < count($arr); $i += 1) {
+				$arr[$i] = doubleval($arr[$i]);
+			}
+		break;
+	}
+    } 
+    
 }
 
 class Custom {
@@ -68,7 +104,7 @@ class Custom {
 			
 			$student_output = $this->execute($student_dir, $value);
 //			$solution_output = $this->execute($solution_dir, $value);
-echo student_output[1];
+echo $student_output[1];
 
 			// Check time limit from student's source code
 			if ($student_output[0] === 'TLE') { 
@@ -94,7 +130,7 @@ echo student_output[1];
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
 			
 			// Verify output of student source code
-			$pattern = '/(-?(0|1)\d{4}\s)/';
+			$pattern = '/(?:Row (\d) has the minimum sum of )?(-?\d+\.\d{4})/';
 			$matcher = new Matcher($pattern, $student_output[1], new MinRowSum());
 			$retval = $matcher->returnVal();
 
@@ -422,7 +458,7 @@ class Matcher {
         $this->pattern = $pattern;
     }
     private function verify($student_output, $logic){
-        $found = preg_match($this->pattern, $student_output, $matches);
+        $found = preg_match_all($this->pattern, $student_output, $matches);
         return $logic->parseMatches($matches, $found);
     }
     public function returnVal(){
