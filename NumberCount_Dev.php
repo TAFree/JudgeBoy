@@ -19,59 +19,45 @@ interface IConnectInfo {
 }
 
 interface ICustomInfo {
-	const TESTDATA = 1; // 1) No testdata 2) Static testdata
+	const TESTDATA = 2; // 1) No testdata 2) Static testdata
 	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
 }
 
-class MinRowSum implements Logic {
+class NumberCount implements Logic {
     
-    private $student_min_sum;
-    private $student_min_row;
-    private $solution_min_sum;
-    private $solution_min_row;
+    private $student_number;
+    private $student_times = array();
+    private $solution_times;
     private $response = '';
 
     public function parseMatches($matches, $found, &$response = null){
-        
+       
 	if ($found === 1) { // Matched
+	    // Calculated items
+	    $this->solution_times = array_fill(0, 10, 0);
+            $this->convertType($matches[1], 'int');
+	    $this->student_number = $matches[1];
+	    for($i = 2; $i <= $this->student_number + 1; $i++){
+		$this->convertType($matches[$i], 'int');
+		$this->solution_times[$matches[$i]]++;
+	    }
 	    
 	    // Get items
-	    $this->convertType($matches[10], 'int');
- 	    $this->convertType($matches[11], 'double');
-	    $this->student_min_row = $matches[10];
-	    $this->student_min_sum = $matches[11];
-	   
-	    
-	    // Reset other matches type
-	    for($i = 1; $i <= 9; $i++){
-	    	$this->convertType($matches[$i], 'double');
-	    }
-	    
-	    // Calculate items
-	    $min = 3.0;
-	    $row = 0;
-	    for($i = 1; $i <= 9; $i += 3){
-		$cur = $matches[$i] + $matches[$i + 1] + $matches[$i + 2];
-		if ($min > $cur) {
-			$min = $cur;
-			$row = (int)($i / 3);
-		}
+	    for($i = $this->student_number + 2; $i < count($matches); $i++){
+	    	$this->convertType($matches[$i], 'int');
+		$this->student_times[$i - $this->student_number - 2] = $matches[$i];
 	    }
 
-	    // Get calculated items
-	    $this->solution_min_sum = number_format($min, 4);
-	    $this->solution_min_row = $row;
-
-
-	    if ($this->range($this->solution_min_sum, $this->student_min_sum, 0.002) && $this->student_min_row === $this->solution_min_row){	
+	    if ($this->solution_times == $this->student_times){	
 		$this->buildTag('Good job!', 'Msg');
 		$response = $this->response;
 		return 0;    
 	    }
 	    else {
 		$this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>';
-		$this->buildTag(array($this->student_min_row, $this->solution_min_row), 'Cmp', 'Minimum row');
-		$this->buildTag(array($this->student_min_sum, $this->solution_min_sum), 'Cmp', 'Minimum sum');
+		for ($i = 0; $i <= 9; $i++){
+			$this->buildTag(array($this->student_times[$i], $this->solution_times[$i]), 'Cmp', $i);
+		}
 		$response = $this->response;
 		return 1;
 	    }
@@ -183,10 +169,14 @@ class Custom {
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
 		
 			// Verify output of student source code
-			$pattern = '/The random 3x3 matrix is:<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>Row (\d) has the minimum sum of (-?\d+\.\d{4})/';
-			$matcher = new Matcher($pattern, $student_output[1], new MinRowSum(), $response);
+			$subpattern = '';
+			for ($i = 1; $i <= $value; $i++){
+				$subpattern .= '(\d)[ ]?';
+			}
+			$pattern = '/Enter the number of single-digit random numbers to be generated: (\d) random numbers are:<br>' . $subpattern . '<br>0 appears (\d) times\.<br>1 appears (\d) times\.<br>2 appears (\d) times\.<br>3 appears (\d) times\.<br>4 appears (\d) times\.<br>5 appears (\d) times\.<br>6 appears (\d) times\.<br>7 appears (\d) times\.<br>8 appears (\d) times\.<br>9 appears (\d) times\./';
+			$matcher = new Matcher($pattern, $student_output[1], new NumberCount(), $response);
 			$retval = $matcher->returnVal();
-			
+
 			array_push($result, $retval);
 			array_push(self::$student_output, $student_output[1]);
 			array_push(self::$solution_output, $response);
