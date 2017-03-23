@@ -60,3 +60,27 @@
 	background-color: #D8D8D8;
 
 }
+
+.WRONG_P {
+	color: red;
+}
+
+.MESSAGE_TD {
+	background-color: #90EE90;
+	height: 5vh;
+	width: 83vw;
+	color: #FF4500;
+	font-weight: bold;
+}
+
+.ITEM_TH {
+	background-color: #90EE90;
+	height: 5vh;
+	width: 33vw;
+}
+
+.ITEM_TD {
+	background-color: #90EE90;
+	height: 5vh;
+	width: 25vw;
+}

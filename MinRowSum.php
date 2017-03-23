@@ -25,49 +25,104 @@ interface ICustomInfo {
 
 class MinRowSum implements Logic {
     
-    private $min_sum;
-    private $min_row;
-    public function parseMatches($matches, $found){
-        if ($found > 0) {
-            $this->convertType($matches[1], 'int');
-            $this->convertType($matches[2], 'double');
-	    $this->min_row = $matches[1][9];
-	    $this->min_sum = $matches[2][9];
+    private $student_min_sum;
+    private $student_min_row;
+    private $solution_min_sum;
+    private $solution_min_row;
+    private $response = '';
+
+    public function parseMatches($matches, $found, &$response = null){
+        
+	if ($found === 1) { // Matched
+	    
+	    // Get items
+	    $this->convertType($matches[10], 'int');
+ 	    $this->convertType($matches[11], 'double');
+	    $this->student_min_row = $matches[10];
+	    $this->student_min_sum = $matches[11];
+	   
+	    
+	    // Reset other matches type
+	    for($i = 1; $i <= 9; $i++){
+	    	$this->convertType($matches[$i], 'double');
+	    }
+	    
+	    // Calculate items
 	    $min = 3.0;
 	    $row = 0;
-	    for($i = 0; $i < count($matches[2]) - 1; $i += 3){
-		$cur = $matches[2][$i] + $matches[2][$i + 1] + $matches[2][$i + 2];
+	    for($i = 1; $i <= 9; $i += 3){
+		$cur = $matches[$i] + $matches[$i + 1] + $matches[$i + 2];
 		if ($min > $cur) {
 			$min = $cur;
-			$row = $i / 3;
+			$row = (int)($i / 3);
 		}
 	    }
-	    if ($this->min_sum === $min && $this->min_row === $row){	
-	        return 0;    
+
+	    // Get calculated items
+	    $this->solution_min_sum = number_format($min, 4);
+	    $this->solution_min_row = $row;
+
+
+	    if ($this->range($this->solution_min_sum, $this->student_min_sum, 0.002) && $this->student_min_row === $this->solution_min_row){	
+		$this->buildTag('Good job!', 'Msg');
+		$response = $this->response;
+		return 0;    
 	    }
 	    else {
+		$this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>';
+		$this->buildTag(array($this->student_min_row, $this->solution_min_row), 'Cmp', 'Minimum row');
+		$this->buildTag(array($this->student_min_sum, $this->solution_min_sum), 'Cmp', 'Minimum sum');
+		$response = $this->response;
 		return 1;
 	    }
+
         }
-        else {
-            return 2;
+        else { // No matched
+            	$this->buildTag('Match Nothing: your output might have format error.', 'Msg');
+		$response = $this->response;
+		return 2;
         }
     }
 
-    private function convertType(&$arr, $type) {
+    private function convertType(&$variable, $type) {
 	switch($type) {
 		case 'int':
-			for($i = 0; $i < count($arr); $i += 1) {
-				$arr[$i] = intval($arr[$i]);
-			}
+			$variable = intval($variable);
 		break;
 		case 'double':
-			for($i = 0; $i < count($arr); $i += 1) {
-				$arr[$i] = doubleval($arr[$i]);
-			}
+			$variable = doubleval($variable);
 		break;
 	}
-    } 
+    }
+
+    private function buildTag($inner, $mode, $item = null) {
+	switch($mode) {
+		case 'Msg':
+			$this->response .= '<tr><td class=\'MESSAGE_TD\'><p>' . $inner . '</p></td></tr>';
+			break;
+		case 'Cmp':
+			if ($inner[0] != $inner[1]) {
+				$this->response .=<<<EOF
+<tr><th class='ITEM_TH'>$item</th><td class='ITEM_TD'><p>{$inner[0]}</p></td><td class='ITEM_TD'><p class='WRONG_P'>{$inner[1]}</p></td></tr>
+EOF;
+			}
+			else{
+				$this->response .=<<<EOF
+<tr><th class='ITEM_TH'>$item</th><td class='ITEM_TD'><p>{$inner[0]}</p></td><td class='ITEM_TD'><p>{$inner[1]}</p></td></tr>
+EOF;
+			}
+			break;
+   	 }
+    }		
+
+    private function range($calculated, $student, $range) {
+	$min = $calculated - $range;
+	$max = $calculated + $range;
+	if ($student >= $min && $student <= $max) {
+		return true;
+	}
+	return false;
+    }
     
 }
 
@@ -103,8 +158,6 @@ class Custom {
 		foreach ($this->testdata as $key => $value) {
 			
 			$student_output = $this->execute($student_dir, $value);
-//			$solution_output = $this->execute($solution_dir, $value);
-echo $student_output[1];
 
 			// Check time limit from student's source code
 			if ($student_output[0] === 'TLE') { 
@@ -128,15 +181,15 @@ echo $student_output[1];
 			
 			// Normalize output of student source code
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
-			
+		
 			// Verify output of student source code
-			$pattern = '/(?:Row (\d) has the minimum sum of )?(-?\d+\.\d{4})/';
-			$matcher = new Matcher($pattern, $student_output[1], new MinRowSum());
+			$pattern = '/The random 3x3 matrix is:<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>(-?\d+\.\d{4}) (-?\d+\.\d{4}) (-?\d+\.\d{4})<br>Row (\d) has the minimum sum of (-?\d+\.\d{4})/';
+			$matcher = new Matcher($pattern, $student_output[1], new MinRowSum(), $response);
 			$retval = $matcher->returnVal();
-
+			
 			array_push($result, $retval);
-//			array_push(self::$student_output, $student_output[1]);
-//			array_push(self::$solution_output, $solution_output[1]);
+			array_push(self::$student_output, $student_output[1]);
+			array_push(self::$solution_output, $response);
 		
 		}
 
@@ -450,16 +503,16 @@ class Matcher {
     private $pattern;
     private $retval;
 
-    public function __construct(String $pattern, String $student_output, Logic $logic){
+    public function __construct(String $pattern, String $student_output, Logic $logic, &$response){
         $this->setPattern($pattern);
-        $this->retval = $this->verify($student_output, $logic);
+        $this->retval = $this->verify($student_output, $logic, $response);
     }
     private function setPattern(String $pattern){
         $this->pattern = $pattern;
     }
-    private function verify($student_output, $logic){
-        $found = preg_match_all($this->pattern, $student_output, $matches);
-        return $logic->parseMatches($matches, $found);
+    private function verify($student_output, $logic, &$response){
+        $found = preg_match($this->pattern, $student_output, $matches);
+        return $logic->parseMatches($matches, $found, $response);
     }
     public function returnVal(){
 	return $this->retval;
@@ -467,7 +520,7 @@ class Matcher {
 }
 
 interface Logic {
-    public function parseMatches($matches, $found); 
+    public function parseMatches($matches, $found, &$response = null); 
 }
 
 class Viewer {
@@ -541,7 +594,6 @@ class UniversalResource implements IResourceInfo {
 <script src='http://$ip/js/basic/stdcmp.js'></script>
 <script>
 JudgeBoy.web.Config.ip("$ip");
-JudgeBoy.view.Basic.stdcmp();
 </script>
 EOF;
 		return self::$resource;
@@ -550,19 +602,18 @@ EOF;
 	public static function BuildTag($student_output, $solution_output, $testdata) {
 		$ip = self::$servername;
 		$view = '';
-		for ($i = 0; $i < count($testdata); $i += 1) {/*
+		for ($i = 0; $i < count($testdata); $i += 1) {
 		    $view .=<<<EOF
 <h2>Input: {$testdata[$i]}</h2>
+<table>{$solution_output[$i]}</table>
 <div class='WHOSE_DIV'>
-<img class='UP_DOWN_IMG' src='http://$ip/svg/attention.svg'>
 <div class='RES_DIV'>
-<div class='SOL_DIV'><pre>{$solution_output[$i]}</pre></div>
 <div class='STU_DIV'><pre>{$student_output[$i]}</pre></div>
 </div>
 </div>
 <br>
 EOF;
-*/		}
+		}
 		return $view;
 	} 
 
