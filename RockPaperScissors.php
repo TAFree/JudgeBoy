@@ -11,7 +11,7 @@ ERROR_REPORTING(E_ALL);
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
 	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
-    const CLASSIC = 2; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
+ 	const CLASSIC = 2; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
 class Custom {
@@ -552,7 +552,7 @@ EOF;
             
             case 2:
                 for ($i = 0; $i < count($testdata); $i += 1) {
-                    $view .= '<h2>Input: {$testdata[$i]}</h2>';
+                    $view .= '<h2>Input: ' . $testdata[$i] . '</h2>';
                     if (is_array($solution_output[$i])) {
                         $view .= '<h2>Expect to match one of the following: </h2>';
                         foreach($solution_output[$i] as $key => $value) {
