@@ -14,46 +14,44 @@ interface ICustomInfo {
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
-class IsPrime implements Logic {
+class Prime implements Logic {
     
-    private $numbers = array();
-    private $student_primes = array();
-    private $solution_primes = array();
-    private $student_cnt;
-    private $solution_cnt;
+    private $student_numbers = array();
+    private $student_prime_cnt;
+    private $solution_prime_cnt = 0;
     private $response = '';
 
     public function parseMatches($matches, $found, &$response = null){
        
         if ($found) { // Matched
-            // Calculated items
-            $this->solution_times = array_fill(0, 10, 0);
-            $this->convertType($matches[1], 'int');
-            $this->student_number = $matches[1];
-            for($i = 2; $i <= $this->student_number + 1; $i++){
-            $this->convertType($matches[$i], 'int');
-            $this->solution_times[$matches[$i]]++;
-        }
-            
-            // Get items
-        for($i = $this->student_number + 2; $i < count($matches); $i++){
-                $this->convertType($matches[$i], 'int');
-            $this->student_times[$i - $this->student_number - 2] = $matches[$i];
-        }
+            for($i = 1; $i <= 11; $i++){
+            	$this->convertType($matches[$i], 'int');
+            	if ($i != 11){
+			array_push($this->student_numbers, $matches[$i]);
+		}
+		else {
+			$this->student_prime_cnt = $matches[$i];
+		}
+	    }	
 
-        if ($this->solution_times == $this->student_times){	
-            $this->buildTag('Good job!', 'Msg');
-            $response = $this->response;
-            return 0;    
-        }
-        else {
-            $this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>';
-            for ($i = 0; $i <= 9; $i++){
-                $this->buildTag(array($this->student_times[$i], $this->solution_times[$i]), 'Cmp', $i);
-            }
-            $response = $this->response;
-            return 1;
-            }
+	    for($i = 0; $i < count($this->student_numbers); $i++){
+		if($this->isPrime($this->student_numbers[$i])){
+			$this->solution_prime_cnt++;
+		}
+	    }
+		
+
+	    if ($this->solution_prime_cnt === $this->student_prime_cnt){	
+	        $this->buildTag('Good job!', 'Msg');
+	        $response = $this->response;
+	        return 0;    
+	    }
+	    else {
+	        $this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>'; 
+		$this->buildTag(array($this->student_prime_cnt, $this->solution_prime_cnt), 'Cmp', 'Number of Prime');
+	        $response = $this->response;
+	        return 1;
+	    }   
 
         }
         else { // No matched
@@ -94,6 +92,17 @@ EOF;
    	 }
     }		
     
+    private function isPrime($n){
+		for($i=2;$i<$n;$i++)
+		{
+			if($n%$i==0)
+				return false;
+		}
+		if($n==1)
+			return false;
+		return true;
+    }
+ 
 }
 
 class Custom {
@@ -153,11 +162,10 @@ class Custom {
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
 		
 			// Verify output of student source code
-			echo $student_output[1];exit();
-			/*
-			$matcher = new Matcher($pattern, $student_output[1], new IsPrime(), $response);
-			$retval = $matcher->returnVal();*/
-
+			$pattern = '/Ten random numbers are: (\d+) (\d+) (\d+) (\d+) (\d+) (\d+) (\d+) (\d+) (\d+) (\d+)<br>The prime numbers in the list are:.+<br>The number of prime numbers: (\d+)/';
+			$matcher = new Matcher($pattern, $student_output[1], new Prime(), $response);
+			$retval = $matcher->returnVal();
+echo $response;exit();
 			array_push($result, $retval);
 			array_push(self::$student_output, $student_output[1]);
 			array_push(self::$solution_output, $response);
@@ -696,7 +704,7 @@ interface IConnectInfo {
 	const HOST = '45.32.107.147';
 	const UNAME = 'ghassho';
 	const PW = 'ghassho_change';
-	const DBNAME = 'TAFreeDev';
+	const DBNAME = 'TAFreeDB';
 
 	public static function doConnect();
 }
