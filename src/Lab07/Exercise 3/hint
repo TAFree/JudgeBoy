@@ -1,0 +1,10 @@
+<pre>
+Enter matrix1: 9 8 7 6 5 4 3 2 1                                                                                                                                         
+Enter matrix2:  6.3 8.2 7.1 5 8 9 2.5 4.2 1.7                                                                                                                            
+                                                                                                                                                                         
+The addition of the matrices is                                                                                                                                          
+ 9.0 8.0 7.0      6.3 8.2 7.1      15.3 16.2 14.1                                                                                                                        
+ 6.0 5.0 4.0  +   5.0 8.0 9.0  =   11.0 13.0 13.0                                                                                                                        
+ 3.0 2.0 1.0      2.5 4.2 1.7       5.5  6.2  2.7
+Row 2 has the minimum sum of 14.4
+</pre>
