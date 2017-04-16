@@ -7,8 +7,10 @@ _JudgeBoy/public/_ is root of 45.32.107.147:83 that is placed css, js, and svg f
 Its configuration file is _JudgeBoy/config/000-judgeboy.conf_.    
   
 **2. Judge Script Examples**  
-_JudgeBoy/src_ is placed judge scripts of lab assignments for reading.  
-**Notice**: Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed with a little fixing during semester!!!  
+_JudgeBoy/src_ is placed judge scripts of lab assignments in NTU CE Computer Programming Course (2017 Spring).  
+  
+**Notice**: 
+Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed to be correct with a little fixing during semester!!!  
 We hope you can modify _JudgeBoy/src/ClassicXX_ as your customizing one, so please change database and custom information:  
 ```
 interface IConnectInfo {
@@ -26,7 +28,7 @@ interface ICustomInfo {
 }
 ```  
   
-**3. The Detailed Idea**  
+**3. The Detailed Ideas**  
 Y. T. Wu (2017). _Assessing Non-Specific Output Format Problems on Online Judge System_ (Master's thesis).
 
 ## License
