@@ -19,27 +19,10 @@ interface IConnectInfo {
 }
 
 interface ICustomInfo {
-	const TESTDATA = 1; // 1) No testdata 2) Static testdata 
+	const TESTDATA = 2; // 1) No testdata 2) Static testdata
+	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
+	const CLASSIC = 1; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
-```
-   
-**3. Container Controller**  
-Run _JudgeBoy/service/cleaner.sh_ in the backend to restart stuck containers (for example, an unstoppable code snippet inside student's submission) all the time.
-```
-sudo git clone http://github.com/TAFree/JudgeBoy
-cd ./JudgeBoy/service
-sudo mv ContainerController.php.example ContainerController.php
-sudo vi ContainerController.php
-interface IConnectInfo {
-
-	const HOST = '45.32.107.147';
-	const UNAME = 'account';
-	const PW = 'password';
-	const DBNAME = 'TAFreeDB';
-
-	public static function doConnect();
-}
-sudo ./cleaner.sh start
 ```
   
 ## License

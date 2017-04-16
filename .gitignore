@@ -1,11 +1,1 @@
-# Ignore binary files
-*.class
 
-# Ignore log & pid file
-cleaner.log
-monitor.log
-cleaner.pid
-monitor.pid
-
-# Ignore file with database password
-ContainerController.php
