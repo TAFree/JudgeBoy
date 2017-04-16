@@ -6,10 +6,10 @@ A PHP repository offering examples for customizing judge script.
 _JudgeBoy/public/_ is root of 45.32.107.147:83 that is placed css, js, and svg files for configuring the response of each submission. 
 Its configuration file is _JudgeBoy/config/000-judgeboy.conf_.    
   
-**2. Judge Script Library**  
+**2. Judge Script Examples**  
 _JudgeBoy/src_ is placed judge scripts of lab assignments for reading.  
-**Notice**: Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed with a little fixing during semester!!!
-We hope you can modify _JudgeBoy/src/ClassicXX_ as your customizing one, so please change database and custom information:
+**Notice**: Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed with a little fixing during semester!!!  
+We hope you can modify _JudgeBoy/src/ClassicXX_ as your customizing one, so please change database and custom information:  
 ```
 interface IConnectInfo {
 	const HOST = '45.32.107.147';
@@ -24,8 +24,9 @@ interface ICustomInfo {
 	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
 	const CLASSIC = 1; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
-```
-**3. The Detailed Idea**
+```  
+  
+**3. The Detailed Idea**  
 Y. T. Wu (2017). _Assessing Non-Specific Output Format Problems on Online Judge System_ (Master's thesis).
 
 ## License
