@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
-	const NORMALIZE = 3; // 1) Raw output 2) Trim output 3) Normalized output
+	const NORMALIZE = 3; // 1) Raw output 2) Highlight output 3) Normalized output
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
@@ -261,14 +261,10 @@ class Custom {
 			// Raw output
 		}
 		if ($mode === 2){
-			// Trim output
-			$leading = '/\A\s*/';
-			$trailing = '/[\s]*\Z/';
+			// Highlight output
 			$whitespace = '/ /';	
 			$tab = '/\t/';
 			$nextline = '/[\n\r\f]/';
-			$output = preg_replace($leading, '', $output);
-			$output = preg_replace($trailing, '', $output);
 			$output = preg_replace($whitespace, '&#9633;', $output);
 			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
 			$output = preg_replace($nextline, '<br>', $output);
@@ -701,8 +697,8 @@ interface IResourceInfo {
 interface IConnectInfo {
 
 	const HOST = '45.32.107.147';
-	const UNAME = 'ghassho';
-	const PW = 'ghassho_change';
+	const UNAME = 'account';
+	const PW = 'password';
 	const DBNAME = 'TAFreeDev';
 
 	public static function doConnect();
