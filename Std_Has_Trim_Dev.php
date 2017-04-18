@@ -195,8 +195,14 @@ class Custom {
 			// Trim output
 			$leading = '/\A\s*/';
 			$trailing = '/[\s]*\Z/';
+			$whitespace = '/ /';	
+			$tab = '/\t/';
+			$nextline = '/[\n\r\f]/';
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
+			$output = preg_replace($whitespace, '&#9633;', $output);
+			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
+			$output = preg_replace($nextline, '<br>', $output);
 		}
 		if ($mode === 3){
 			// Normalized output
@@ -207,7 +213,7 @@ class Custom {
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
 			$output = preg_replace($linebreak, '<br>', $output);
-			$output = preg_replace($whitespace, '&#9632;$1', $output);
+			$output = preg_replace($whitespace, ' $1', $output);
 		}
 		return $output;
 	}
