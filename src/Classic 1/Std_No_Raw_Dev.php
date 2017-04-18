@@ -195,8 +195,14 @@ class Custom {
 			// Trim output
 			$leading = '/\A\s*/';
 			$trailing = '/[\s]*\Z/';
+			$whitespace = '/ /';	
+			$tab = '/\t/';
+			$nextline = '/[\n\r\f]/';
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
+			$output = preg_replace($whitespace, '&#9633;', $output);
+			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
+			$output = preg_replace($nextline, '<br>', $output);
 		}
 		if ($mode === 3){
 			// Normalized output
@@ -626,8 +632,8 @@ interface IResourceInfo {
 interface IConnectInfo {
 
 	const HOST = '45.32.107.147';
-	const UNAME = 'account';
-	const PW = 'password';
+	const UNAME = 'ghassho';
+	const PW = 'ghassho_change';
 	const DBNAME = 'TAFreeDev';
 
 	public static function doConnect();
