@@ -628,8 +628,8 @@ interface IResourceInfo {
 interface IConnectInfo {
 
 	const HOST = '45.32.107.147';
-	const UNAME = 'ghassho';
-	const PW = 'ghassho_change';
+	const UNAME = 'account';
+	const PW = 'password';
 	const DBNAME = 'TAFreeDev';
 
 	public static function doConnect();
