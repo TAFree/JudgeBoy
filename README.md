@@ -10,7 +10,7 @@ Its configuration file is _JudgeBoy/config/000-judgeboy.conf_.
 _JudgeBoy/src_ is placed judge scripts of lab assignments in NTU CE Computer Programming Course (2017 Spring).  
   
 **Notice**:   
-Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed to be correct with a little fixing during semester!!!     
+<span style="color:red">Judge scripts in _JudgeBoy/src/LabXX_ are not guaranteed to be correct with a little fixing during semester!!!</span>     
 We hope you can modify _JudgeBoy/src/ClassicXX_ as your customizing one, so please change database and custom information:  
 ```
 interface IConnectInfo {
