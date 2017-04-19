@@ -10,8 +10,8 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 1; // 1) No testdata 2) Static testdata
-	const NORMALIZE = 2; // 1) Raw output 2) Highlight output 3) Normalized output
-    const CLASSIC = 1; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
+	const NORMALIZE = 2; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Hightlight output
+    const CLASSIC = 1; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison
 }
 
 class StdCmp implements Logic {
@@ -210,6 +210,19 @@ class Custom {
 			$output = preg_replace($trailing, '', $output);
 			$output = preg_replace($linebreak, '<br>', $output);
 			$output = preg_replace($whitespace, ' $1', $output);
+		}
+		if ($mode === 4){
+			// Highlight output
+            $leading = '/\A\s*/';
+			$trailing = '/[\s]*\Z/';
+			$whitespace = '/ /';	
+			$tab = '/\t/';
+			$nextline = '/[\n\r\f]/';
+			$output = preg_replace($leading, '', $output);
+			$output = preg_replace($trailing, '', $output);
+			$output = preg_replace($whitespace, '&#9633;', $output);
+			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
+			$output = preg_replace($nextline, '<br>', $output);
 		}
 		return $output;
 	}
