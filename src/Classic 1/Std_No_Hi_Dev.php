@@ -212,7 +212,7 @@ class Custom {
 			$output = preg_replace($whitespace, ' $1', $output);
 		}
 		if ($mode === 4){
-			// Highlight output
+			// Trim-Highlight output
             $leading = '/\A\s*/';
 			$trailing = '/[\s]*\Z/';
 			$whitespace = '/ /';	
