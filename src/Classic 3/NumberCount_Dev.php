@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
-    const NORMALIZE = 3; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Hightlight output
+    const NORMALIZE = 3; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
