@@ -115,7 +115,7 @@ class Custom {
 		$this->id = Must::$id;
 		$this->main = Must::$main;
 	 	$this->dir_name = Must::$dir_name;
-        $this->testdata = Must::$testdata;
+        	$this->testdata = Must::$testdata;
 		
 		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
@@ -282,16 +282,17 @@ class Custom {
 		}
 		if ($mode === 4){
 			// Trim-Highlight output
-            $leading = '/\A\s*/';
+			$leading = '/\A\s*/';
 			$trailing = '/[\s]*\Z/';
+            		$linebreak = '/[\s]*[\n\r\f][ \t]*/';
 			$whitespace = '/ /';	
 			$tab = '/\t/';
-			$nextline = '/[\n\r\f]/';
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
+            		$output = preg_replace($linebreak, '<br>', $output);
 			$output = preg_replace($whitespace, '&#9633;', $output);
 			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
-			$output = preg_replace($nextline, '<br>', $output);
+
 		}
 		return $output;
 	}
