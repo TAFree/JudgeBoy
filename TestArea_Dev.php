@@ -158,7 +158,7 @@ class Custom {
 			$pattern = '/1:&#9633;(Circle|Square)<br>2:&#9633;(Circle|Square)<br>3:&#9633;(Circle|Square)<br>4:&#9633;(Circle|Square)<br>5:&#9633;(Circle|Square)<br>6:&#9633;(Circle|Square)<br>7:&#9633;(Circle|Square)<br>8:&#9633;(Circle|Square)<br>9:&#9633;(Circle|Square)<br>10:&#9633;(Circle|Square)<br>Number&#9633;of&#9633;Circles&#9633;=&#9633;\d+<br>Number&#9633;of&#9633;Squares&#9633;=&#9633;\d+<br>Total&#9633;Area&#9633;=&#9633;(\d+\.\d+)/';			
 
 			$matcher = new Matcher($pattern, $student_output[1], new TestArea(), $response);
-echo $response; exit();
+
 			$retval = $matcher->returnVal();
 
 			array_push($result, $retval);
