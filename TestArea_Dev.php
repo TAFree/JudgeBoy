@@ -10,47 +10,44 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 1; // 1) No testdata 2) Static testdata
-    const NORMALIZE = 4; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
-    const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
+	const NORMALIZE = 4; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
+        const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
 class TestArea implements Logic {
     
-    private $student_number;
-    private $student_times = array();
-    private $solution_times;
+    private $student_area;
+    private $solution_area;
     private $response = '';
 
     public function parseMatches($matches, $found, &$response = null){
        
         if ($found) { // Matched
-            // Calculated items
-            $this->solution_times = array_fill(0, 10, 0);
-            $this->convertType($matches[1], 'int');
-            $this->student_number = $matches[1];
-            for($i = 2; $i <= $this->student_number + 1; $i++){
-            $this->convertType($matches[$i], 'int');
-            $this->solution_times[$matches[$i]]++;
-        }
-            
-            // Get items
-        for($i = $this->student_number + 2; $i < count($matches); $i++){
-                $this->convertType($matches[$i], 'int');
-            $this->student_times[$i - $this->student_number - 2] = $matches[$i];
-        }
+        
+	    // Calculated items
+            $this->convertType($matches[11], 'double');
+            $this->student_area = $matches[11];
+	    $this->solution_area = 0.0;
+	    for($i = 1; $i <= 10; $i += 1){
+		    if($matches[$i] == 'Circle') {
+			$this->solution_area += $i*$i*pi();
+		    }
+		    if($matches[$i] == 'Square') {
+			$this->solution_area += $i*$i;
+		    }
+	    }
 
-        if ($this->solution_times == $this->student_times){	
-            $this->buildTag('Good job!', 'Msg');
-            $response = $this->response;
-            return 0;    
-        }
-        else {
-            $this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>';
-            for ($i = 0; $i <= 9; $i++){
-                $this->buildTag(array($this->student_times[$i], $this->solution_times[$i]), 'Cmp', $i);
-            }
-            $response = $this->response;
-            return 1;
+	    if ($this->equalArea($this->solution_area, $this->student_area)){	
+		    $this->buildTag('Good job!', 'Msg');
+		    $response = $this->response;
+		    return 0;    
+	    }
+	    else {
+		    $this->response .= '<tr><th class=\'ITEM_TH\'></th><th class=\'ITEM_TD\'>Output</th><th class=\'ITEM_TD\'>Calculation</th></tr>';
+		    
+		    $this->buildTag(array($this->student_area, $this->solution_area), 'Cmp', 'Area');
+		    $response = $this->response;
+		    return 1;
             }
 
         }
@@ -59,6 +56,13 @@ class TestArea implements Logic {
                 $response = $this->response;
                 return 2;
         }
+    }
+
+    private function equalArea($solution, $student) {
+	if (($solution+10)>=$student && ($solution-10)<=$student){
+		return true;
+	}	   
+	return false;
     }
 
     private function convertType(&$variable, $type) {
@@ -115,7 +119,7 @@ class Custom {
 		$this->id = Must::$id;
 		$this->main = Must::$main;
 	 	$this->dir_name = Must::$dir_name;
-        $this->testdata = Must::$testdata;
+	        $this->testdata = Must::$testdata;
 		
 		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
@@ -149,10 +153,12 @@ class Custom {
 			
 			// Normalize output of student source code
 			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
-		
+			
 			// Verify output of student source code
-			$pattern = '/Enter the number of single-digit random numbers to be generated: (\d) random numbers are:<br>' . $subpattern . '<br>0 appears (\d) times\.<br>1 appears (\d) times\.<br>2 appears (\d) times\.<br>3 appears (\d) times\.<br>4 appears (\d) times\.<br>5 appears (\d) times\.<br>6 appears (\d) times\.<br>7 appears (\d) times\.<br>8 appears (\d) times\.<br>9 appears (\d) times\./';
+			$pattern = '/1:&#9633;(Circle|Square)<br>2:&#9633;(Circle|Square)<br>3:&#9633;(Circle|Square)<br>4:&#9633;(Circle|Square)<br>5:&#9633;(Circle|Square)<br>6:&#9633;(Circle|Square)<br>7:&#9633;(Circle|Square)<br>8:&#9633;(Circle|Square)<br>9:&#9633;(Circle|Square)<br>10:&#9633;(Circle|Square)<br>Number&#9633;of&#9633;Circles&#9633;=&#9633;\d+<br>Number&#9633;of&#9633;Squares&#9633;=&#9633;\d+<br>Total&#9633;Area&#9633;=&#9633;(\d+\.\d+)/';			
+
 			$matcher = new Matcher($pattern, $student_output[1], new TestArea(), $response);
+echo $response; exit();
 			$retval = $matcher->returnVal();
 
 			array_push($result, $retval);
@@ -706,8 +712,8 @@ interface IResourceInfo {
 interface IConnectInfo {
 
 	const HOST = '45.32.107.147';
-	const UNAME = 'account';
-	const PW = 'password';
+	const UNAME = 'ghassho';
+	const PW = 'ghassho_change';
 	const DBNAME = 'TAFreeDev';
 
 	public static function doConnect();
