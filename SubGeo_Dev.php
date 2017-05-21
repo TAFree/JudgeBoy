@@ -14,7 +14,7 @@ interface ICustomInfo {
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
-class Geo implements Logic {
+class SubGeo implements Logic {
     
     private $response = '';
 
@@ -119,12 +119,10 @@ class Custom {
 			}
 			
 			// Normalize output of student source code
-			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);
-			
+			$student_output[1] = $this->normalize($student_output[1], ICustomInfo::NORMALIZE);			
 			// Verify output of student source code
-			$pattern = '/The&#9633;Geometric&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;white&#9633;and&#9633;filled:&#9633;false<br>The&#9633;Geometric&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;red&#9633;and&#9633;filled:&#9633;true<br>The&#9633;Square&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;white&#9633;and&#9633;filled:&#9633;false<br>length:&#9633;1\.0&#9633;area:&#9633;1\.0&#9633;and&#9633;perimeter:&#9633;4\.0<br>The&#9633;Square&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;green&#9633;and&#9633;filled:&#9633;true<br>length:&#9633;3\.5&#9633;area:&#9633;12\.25&#9633;and&#9633;perimeter:&#9633;14\.0/';			
-
-			$matcher = new Matcher($pattern, $student_output[1], new Geo(), $response);
+			$pattern = '/The&#9633;(?:Circle|Square)&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;red&#9633;and&#9633;filled:&#9633;true<br>(?:length|radius):&#9633;.+area:&#9633;.+&#9633;and&#9633;perimeter:&#9633;.+<br>The&#9633;(?:Circle|Square)&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;red&#9633;and&#9633;filled:&#9633;true<br>(?:length|radius):&#9633;.+area:&#9633;.+&#9633;and&#9633;perimeter:&#9633;.+<br>The&#9633;(?:Circle|Square)&#9633;object&#9633;is&#9633;created&#9633;on&#9633;.+<br>color:&#9633;red&#9633;and&#9633;filled:&#9633;true<br>(?:length|radius):&#9633;.+area:&#9633;.+&#9633;and&#9633;perimeter:&#9633;.+/';			
+			$matcher = new Matcher($pattern, $student_output[1], new SubGeo(), $response);
 echo $response; exit();
 			$retval = $matcher->returnVal();
 
