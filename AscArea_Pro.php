@@ -11,7 +11,7 @@ ERROR_REPORTING(E_ALL);
 interface ICustomInfo {
 	const TESTDATA = 1; // 1) No testdata 2) Static testdata
 	const NORMALIZE = 4; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
-    const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
+    	const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
 class AscArea implements Logic {
@@ -35,14 +35,20 @@ class AscArea implements Logic {
                 for($i=2; $i <= 5; $i++){
                     $this->buildTag(array($matches[$i-1], $matches[$i]), 'Cmp', $this->cmpopt[$i-2]);
                 }
+
+		$response = $this->response;
+		    
+		return 1;    
+		
             }
             else{
                 $this->buildTag('Good job!', 'Msg');
+            
+		$response = $this->response;
+		    
+		return 0;    
             }
 		    
-		    $response = $this->response;
-		    
-		    return 0;    
         }
         else { // No matched
             	$this->buildTag('Match Nothing: check your spelling or format.', 'Msg');
@@ -55,8 +61,9 @@ class AscArea implements Logic {
         if($area1 < $area2){
             array_push($this->cmpopt, '<');
         }
-        array_push($this->cmpopt, '>');
-        
+	else{
+        	array_push($this->cmpopt, '>');
+        }
     }
 
     private function convertType(&$variable, $type) {
@@ -706,7 +713,7 @@ interface IConnectInfo {
 	const HOST = '45.32.107.147';
 	const UNAME = 'ghassho';
 	const PW = 'ghassho_change';
-	const DBNAME = 'TAFreeDB';
+	const DBNAME = 'TAFreeDev';
 
 	public static function doConnect();
 }
