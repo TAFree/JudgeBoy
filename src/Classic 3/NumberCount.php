@@ -9,7 +9,7 @@ ini_set('display_errors', '1');
 ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
-	const TESTDATA = 2; // 1) No testdata 2) Static testdata
+    const TESTDATA = 2; // 1) No testdata 2) Static testdata
     const NORMALIZE = 3; // 1) Trim-end output 2) Normalized output
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
@@ -35,7 +35,7 @@ class NumberCount implements Logic {
             
             // Get items
         for($i = $this->student_number + 2; $i < count($matches); $i++){
-                $this->convertType($matches[$i], 'int');
+            $this->convertType($matches[$i], 'int');
             $this->student_times[$i - $this->student_number - 2] = $matches[$i];
         }
 
@@ -115,7 +115,7 @@ class Custom {
 		$this->id = Must::$id;
 		$this->main = Must::$main;
 	 	$this->dir_name = Must::$dir_name;
-        $this->testdata = Must::$testdata;
+    		$this->testdata = Must::$testdata;
 		
 		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
@@ -258,7 +258,7 @@ class Custom {
     private function normalize ($input, $mode) {
 		$output = $input;
 		if ($mode === 1) {
-            // Trim-end output
+            		// Trim-end output
 			$linebreak = '/[\s]*[\n\r\f][ \t]*/';
 			$output = preg_replace($linebreak, '<br>', $output);
 		}
@@ -567,7 +567,7 @@ class UniversalResource implements IResourceInfo {
 	private static $resource;
 
 	public static function loadResource() {
-        $ip = self::$servername;
+        	$ip = self::$servername;
 		self::$resource .=<<<EOF
 <link type='text/css' rel='stylesheet' href='http://$ip/css/stdcmp.css'>
 <script src='http://$ip/js/namespace/judgeboy.js'></script>
@@ -587,9 +587,9 @@ EOF;
 		$view = '';
 		switch(ICustomInfo::CLASSIC) {
 		
-            case 1:
-                for ($i = 0; $i < count($testdata); $i += 1) {
-                    $view .=<<<EOF
+            	case 1:
+                	for ($i = 0; $i < count($testdata); $i += 1) {
+                    		$view .=<<<EOF
 <h2>Input: {$testdata[$i]}</h2>
 <div class='WHOSE_DIV'>
 <img class='UP_DOWN_IMG' src='http://$ip/svg/attention.svg'>
@@ -600,34 +600,34 @@ EOF;
 </div>
 <br>
 EOF;
-                }
-            break;
+                	}	
+            		break;
             
-            case 2:
-                for ($i = 0; $i < count($testdata); $i += 1) {
-                    $view .= '<h2>Input: ' . $testdata[$i] . '</h2>';
-                    if (is_array($solution_output[$i])) {
-                        $view .= '<h2>Expect to match one of the following: </h2>';
-                        foreach($solution_output[$i] as $key => $value) {
-                            $view .=<<<EOF
+            	case 2:
+                	for ($i = 0; $i < count($testdata); $i += 1) {
+                    		$view .= '<h2>Input: ' . $testdata[$i] . '</h2>';
+                    		if (is_array($solution_output[$i])) {
+                        		$view .= '<h2>Expect to match one of the following: </h2>';
+                        		foreach($solution_output[$i] as $key => $value) {
+                            			$view .=<<<EOF
 <div class='WHOSE_DIV'>
 <input id='$i' class='CANDI_INPUT' type='radio' name='candi' value='$value'>
 <div class='CANDI_DIV'><pre>$value</pre></div>
 </div>
 EOF;
-                        }
-                    }
-                    else {
-                        $view .=<<<EOF
+                        		}
+                    		}
+                    		else {
+                        		$view .=<<<EOF
 <h2>Match: </h2>
 <div class='WHOSE_DIV'>
 <input id='$i' class='CANDI_INPUT' type='checkbox' name='candi' value='{$solution_output[$i]}'>
 <div class='CANDI_DIV'><pre>{$solution_output[$i]}</pre></div>
 </div>
 EOF;
-                    }
-                    $view .= '<h2>Your output: </h2>';
-                    $view .=<<<EOF
+                    		}
+                    		$view .= '<h2>Your output: </h2>';
+                    		$view .=<<<EOF
 <div class='WHOSE_DIV'>
 <div class='RES_DIV'>
 <div id='$i' class='SOL_DIV'><pre></pre></div>
@@ -636,12 +636,12 @@ EOF;
 </div>
 <br>
 EOF;
-                }
-            break;
+                	}
+            		break;
             
-            case 3:
-                for ($i = 0; $i < count($testdata); $i += 1) {
-                    $view .=<<<EOF
+            	case 3:
+                	for ($i = 0; $i < count($testdata); $i += 1) {
+                    		$view .=<<<EOF
 <h2>Input: {$testdata[$i]}</h2>
 <table>{$solution_output[$i]}</table>
 <div class='WHOSE_DIV'>
@@ -651,9 +651,9 @@ EOF;
 </div>
 <br>
 EOF;
-                }
-            break;
-        }
+                	}
+            		break;
+        	}
         
 		return $view;
 	} 
@@ -661,7 +661,7 @@ EOF;
 }
 
 interface Logic {
-    public function parseMatches($matches, $found, &$response = null); 
+    	public function parseMatches($matches, $found, &$response = null); 
 }
 
 class UniversalConnect implements IConnectInfo {
