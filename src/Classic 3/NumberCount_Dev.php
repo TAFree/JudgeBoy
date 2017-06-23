@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
-    const NORMALIZE = 3; // 1) Raw output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
+    const NORMALIZE = 3; // 1) Trim-end output 2) Highlight output 3) Normalized output 4) Trim-Highlight output
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
@@ -115,7 +115,7 @@ class Custom {
 		$this->id = Must::$id;
 		$this->main = Must::$main;
 	 	$this->dir_name = Must::$dir_name;
-        	$this->testdata = Must::$testdata;
+        $this->testdata = Must::$testdata;
 		
 		// Solution and student source directory
 		$solution_dir = $this->dir_name . '/solution';
@@ -258,7 +258,9 @@ class Custom {
     private function normalize ($input, $mode) {
 		$output = $input;
 		if ($mode === 1) {
-			// Raw output
+            // Trim-end output
+			$linebreak = '/[\s]*[\n\r\f][ \t]*/';
+			$output = preg_replace($linebreak, '<br>', $output);
 		}
 		if ($mode === 2){
 			// Highlight output
@@ -284,15 +286,14 @@ class Custom {
 			// Trim-Highlight output
 			$leading = '/\A\s*/';
 			$trailing = '/[\s]*\Z/';
-            		$linebreak = '/[\s]*[\n\r\f][ \t]*/';
+            $linebreak = '/[\s]*[\n\r\f][ \t]*/';
 			$whitespace = '/ /';	
 			$tab = '/\t/';
 			$output = preg_replace($leading, '', $output);
 			$output = preg_replace($trailing, '', $output);
-            		$output = preg_replace($linebreak, '<br>', $output);
+            $output = preg_replace($linebreak, '<br>', $output);
 			$output = preg_replace($whitespace, '&#9633;', $output);
 			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
-
 		}
 		return $output;
 	}
