@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
     const TESTDATA = 2; // 1) No testdata 2) Static testdata
-    const NORMALIZE = 2; // 1) Trim-end output 2) Normalized output
+    const NORMALIZE = 2; // 1) Highlight output 2) Normalized output
     const CLASSIC = 3; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
@@ -254,13 +254,18 @@ class Custom {
 
 		return $out_err;
 	}
-	
-    private function normalize ($input, $mode) {
+    	private function normalize ($input, $mode) {
 		$output = $input;
 		if ($mode === 1) {
-            		// Trim-end output
-			$linebreak = '/[\s]*[\n\r\f][ \t]*/';
-			$output = preg_replace($linebreak, '<br>', $output);
+			// Highlight output
+			$trailing = '/[\s]*\Z/';
+			$whitespace = '/ /';	
+			$tab = '/\t/';
+			$nextline = '/[\n\r\f]/';
+			$output = preg_replace($trailing, '', $output);
+			$output = preg_replace($whitespace, '&#9633;', $output);
+			$output = preg_replace($tab, '&#9633;&#9633;$#9633;&#9633;', $output);
+			$output = preg_replace($nextline, '<br>', $output);
 		}
 		if ($mode === 2){
 			// Normalized output
@@ -274,7 +279,7 @@ class Custom {
 			$output = preg_replace($whitespace, ' $1', $output);
 		}
 		return $output;
-	}
+	}	
 }
 
 class Matcher {
