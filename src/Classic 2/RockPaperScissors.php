@@ -10,7 +10,7 @@ ERROR_REPORTING(E_ALL);
 
 interface ICustomInfo {
 	const TESTDATA = 2; // 1) No testdata 2) Static testdata
-	const NORMALIZE = 3; // 1) Trim-end output 2) Normalized output
+	const NORMALIZE = 2; // 1) Trim-end output 2) Normalized output
  	const CLASSIC = 2; // 1) Standard comparison 2) Branch comparison 3) Post-process comparison 
 }
 
@@ -74,32 +74,32 @@ class Custom {
 			$pattern = array();
 			$response = null;
 			$retval = null;
-            switch($value) {
-                case 0:
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are scissor too. It is a draw!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are scissor. You lose!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are scissor. You win!");
-                    break;
-                case 1:
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are rock. You win!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are rock too. It is a draw!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are rock. You lose!");
-                    break;
-                case 2:
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are paper. You lose!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are paper. You win!");
-                    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are paper too. It is a draw!");
-                    break;
-            }
-            
-            if (in_array($student_output[1], $pattern)) {
-                $response = $student_output[1];
-                $retval = 0;
-            }
-            else {
-                $response = $pattern;
-                $retval = 1;
-            }
+			switch($value) {
+				case 0:
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are scissor too. It is a draw!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are scissor. You lose!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are scissor. You win!");
+				    break;
+				case 1:
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are rock. You win!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are rock too. It is a draw!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are rock. You lose!");
+				    break;
+				case 2:
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is scissor. You are paper. You lose!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is rock. You are paper. You win!");
+				    array_push($pattern, "scissor (0), rock (1), paper (2): The computer is paper. You are paper too. It is a draw!");
+				    break;
+			}
+			    
+			if (in_array($student_output[1], $pattern)) {
+				$response = $student_output[1];
+				$retval = 0;
+			}
+			else {
+				$response = $pattern;
+				$retval = 1;
+			}
             
 			array_push($result, $retval);
 			array_push(self::$student_output, $student_output[1]);
