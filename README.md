@@ -30,7 +30,7 @@ interface ICustomInfo {
 ```  
   
 **3. The Detailed Ideas**  
-Y. T. Wu (2017). _Assessing Non-Specific Output Format Problems on Online Judge System_ (Master's thesis).
+Yu-Tzu Wu (2017). _An Automatic Assessment System for Marking Programming Exercises with Random Output_ (Master's thesis).
 
 ## License
 JudgeBoy is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
