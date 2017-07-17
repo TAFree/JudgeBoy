@@ -1,7 +1,0 @@
-<h2>Exercise 3</h2>
-<p class='WARN_P'>檔名為Lab1JavaPattern.java</p>
-<pre>
-檔名要與class一致，像這樣
-public class Lab1JavaPattern
-交出去之後，點右上角的驚嘆號，黑色的部份是你的輸出結果，紅色的部份是解答印出來的，可以看你的輸出格式有沒有跑掉。
-</pre>

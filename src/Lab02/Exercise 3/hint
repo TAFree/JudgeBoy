@@ -1,5 +1,0 @@
-<strong>Hint</strong><br>
-<p class='WARN_P'>Please set PI = 3.141592</p><br>
-Enter the radius of a circle:&nbsp<p class='WARN_P'> -->print string trailing with space</p><br>
-The area of the circle is: 314.1592<p class='WARN_P'> -->(println)</p><br>
-The circumference of the circle is: 62.83184<p class='WARN_P'> -->(println)</p><br>

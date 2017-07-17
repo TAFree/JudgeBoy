@@ -1,5 +1,0 @@
-<pre>
-Enter the real part of Z: -1.7321
-Enter the imaginary part of Z: 1
-Module of Z is 2.000043, and its argument is 150.000705<p class='WARN_P'> -->println, 小數點後有六位數(6 digits after decimal point)</p>
-</pre>

@@ -1,9 +1,0 @@
-<pre>
-Enter a floating number, Q to quit: 356.98
-The integral portion is: 356
-The decimal portion is: 0.9800
-Enter a floating number, Q to quit: 3.1415926
-The integral portion is: 3
-The decimal portion is: 0.1416
-Enter a floating number, Q to quit: Q
-</pre>

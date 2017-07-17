@@ -1,7 +1,0 @@
-<pre>
-Enter a positive integer (0 to end the input): 1
-Enter a positive integer (0 to end the input): 2
-Enter a positive integer (0 to end the input): 2
-Input value 2 is an adjacent duplicate input
-Enter a positive integer (0 to end the input): 0
-</pre>
